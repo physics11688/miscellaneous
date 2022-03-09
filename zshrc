@@ -1,3 +1,5 @@
+# ArduinoBook macのmultipass用
+
 ### Added by Zinit's installer
 if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
     print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
@@ -169,7 +171,7 @@ preexec() {
 
 
 PROMPT='
-[%B%F{cyan}%n%f%b@Multipass:%F{yellow}%~%f]
+[%B%F{cyan}%n%f%b@Ubuntu:%F{yellow}%~%f]
 %B%F{red}$%f%b '
 
 #RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
@@ -212,3 +214,5 @@ bindkey ";5C" forward-word
 bindkey ";5D" backward-word
 bindkey ";5A" backward-kill-word
 bindkey ";5B" yank
+
+
