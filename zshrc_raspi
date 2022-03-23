@@ -222,6 +222,11 @@ alias rm="trash-put"
 alias update="sudo apt update && sudo apt -y upgrade"
 alias m="micro"
 
+bindkey ";5C" forward-word
+bindkey ";5D" backward-word
+bindkey ";5A" backward-kill-word
+bindkey ";5B" yank
+
 export LANG=ja_JP.UTF-8
 
 
