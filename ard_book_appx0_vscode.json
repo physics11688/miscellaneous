@@ -1,6 +1,6 @@
     
     
-    /********* settings.jsonに追記する ********/
+    /*************** 自動追記 ********************/
 
     // エディタの設定
     "editor.formatOnSave": true, // formatterでコードをキレイにする
@@ -46,5 +46,7 @@
     "c-cpp-compile-run.run-in-external-terminal": true, // 外部ターミナルで実行
     "c-cpp-compile-run.c-compiler": "C:\\Program Files\\mingw64\\bin\\gcc.exe", // gccでビルド
     "c-cpp-compile-run.c-flags": "-std=c11 -Wall -Wextra -fexec-charset=cp932",
+
+    /*************** 自動追記 ********************/
 
 }
