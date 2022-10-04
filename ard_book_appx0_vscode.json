@@ -48,5 +48,3 @@
     "c-cpp-compile-run.c-flags": "-std=c11 -Wall -Wextra -fexec-charset=cp932",
 
     /*************** 自動追記 ********************/
-
-}
