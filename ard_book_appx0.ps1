@@ -1,3 +1,5 @@
+
+############ 自動追記 ##############
 # lsの色付け
 Import-Module Get-ChildItemColor
 
@@ -183,3 +185,6 @@ function updateC () {
     }
 
 }
+
+
+############ 自動追記 ##############
