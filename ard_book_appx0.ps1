@@ -1,4 +1,6 @@
 
+
+
 ############ 自動追記 ##############
 # lsの色付け
 Import-Module Get-ChildItemColor
