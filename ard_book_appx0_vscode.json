@@ -1,0 +1,50 @@
+    
+    
+    /********* settings.jsonに追記する ********/
+
+    // エディタの設定
+    "editor.formatOnSave": true, // formatterでコードをキレイにする
+    "editor.bracketPairColorization.enabled": true,    // かっこの色付け
+    "editor.guides.bracketPairs": true,                // かっこの間を見えるように
+    "editor.guides.highlightActiveIndentation": true,  // インデント色付け
+    "editor.suggestSelection": "first",      // サジェスト
+
+    /* C/C++ を書いてるときだけこの設定になる */
+    "[c]": {
+        "editor.wordBasedSuggestions": false,
+        "editor.suggest.insertMode": "replace",
+        "editor.semanticHighlighting.enabled": true,
+        "editor.defaultFormatter": "ms-vscode.cpptools",
+        "editor.tabSize": 4,
+    },
+
+    /* C/C++拡張機能用設定 */
+    "C_Cpp.default.compilerPath": "C:\\Program Files\\mingw64\\bin\\gcc.exe", // 文字コードの関係上 clang じゃなくて gcc にする
+    "C_Cpp.clang_format_path": "C:\\Program Files\\LLVM\\bin\\clang-format.exe", // clang-format使う
+    "C_Cpp.default.intelliSenseMode": "gcc-x64",
+    "C_Cpp.default.cStandard": "c11",
+    "C_Cpp.default.compilerArgs": [
+        "-std=c11",
+        "-Wall",
+        "-Wextra"
+    ],
+    // formatterの設定。基本はGoogle様が推奨してるスタイルにする
+    "C_Cpp.clang_format_style": "{BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 120, AlignConsecutiveAssignments: true, MaxEmptyLinesToKeep: 2, SortIncludes: false, AlignTrailingComments: true,}",
+
+    /* clang command adapter用設定 */
+    "clang.executable": "C:\\Program Files\\LLVM\\bin\\clang.exe",
+    "clang.completion.enable": false, // 補完は標準機能のほうが良いので切る
+    "clang.cflags": [ // -Weverythingはつけない → https://quuxplusone.github.io/blog/2018/12/06/dont-use-weverything/
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-target",
+        "x86_64-pc-windows-gnu"
+    ],
+
+    /* C/C++ Compile Runの設定 */
+    "c-cpp-compile-run.run-in-external-terminal": true, // 外部ターミナルで実行
+    "c-cpp-compile-run.c-compiler": "C:\\Program Files\\mingw64\\bin\\gcc.exe", // gccでビルド
+    "c-cpp-compile-run.c-flags": "-std=c11 -Wall -Wextra -fexec-charset=cp932",
+
+}
