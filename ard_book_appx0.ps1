@@ -144,7 +144,8 @@ function updateC () {
     winget upgrade LLVM.LLVM
       
     # MinGWのダウンロードURLを取得して 変数URL にセット 
-    $URL = curl -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86.*win32-seh.*7z" | ForEach-Object { $_.Matches.Value }
+    # PowerShell5.1以前だと curl は Invoke-WebRequest のエイリアスなので exe までつけとく
+    $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86.*win32-seh.*7z" | ForEach-Object { $_.Matches.Value }
 
     if ($null -eq $URL) {
         Write-Output "`nMingWのダウンロードURL取得に失敗しました`n後で再度試してみてください."
@@ -168,10 +169,10 @@ function updateC () {
     }
     else {
         # MinGWのダウンロード. 
-        curl -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
+        curl.exe -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
 
         # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード
-        curl -OL https://www.7-zip.org/a/7zr.exe
+        curl.exe -OL https://www.7-zip.org/a/7zr.exe
 
         # 解凍
         .\7zr.exe x .\x86*win32-seh*.7z  # mingw64 ってフォルダが出来るはず
