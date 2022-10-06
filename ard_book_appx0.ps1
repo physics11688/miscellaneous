@@ -142,51 +142,57 @@ $env:path += ";$env:ProgramFiles\mingw64\bin" # 一応・・・
 function updateC () {
     # LLVMのアップデート
     winget upgrade LLVM.LLVM
-      
+       
     # MinGWのダウンロードURLを取得して 変数URL にセット 
-    # PowerShell5.1以前だと curl は Invoke-WebRequest のエイリアスなので exe までつけとく
     $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86.*win32-seh.*7z" | ForEach-Object { $_.Matches.Value }
-
+ 
     if ($null -eq $URL) {
         Write-Output "`nMingWのダウンロードURL取得に失敗しました`n後で再度試してみてください."
         exit
     }
-
-    $version = $(C:\Program` Files\mingw64\bin\gcc.exe -dumpversion)
-    if (Test-Path 'C:\Program Files\mingw64\bin') {
-        if ($null -eq $version) {
-            Write-Output "`ngccはインストール済みだけど,パスが通っていないので注意してください."
-            Write-Output "このプログラム終了後に C:\Program Files\mingw64\bin にパスを通してください."
+ 
+    if (Test-Path 'C:\Program Files\mingw64\bin\gcc.exe') {
+        $version = $(C:\Program` Files\mingw64\bin\gcc.exe -dumpversion)
+        if ( $URL -match $version) {
+            Write-Output "`n現在使用中のMinGWは最新版です.`nアップデートを終了します."
+            return $true
+        }
+        else {
+            Write-Output "`n現在使用中のMinGWを最新版にアップデートします."
         }
     }
     else {
-        Write-Output "`nC:\Program Files\mingw64\ が見当たりません.`n新規にインストールを行います."
+        Write-Output "`nC:\Program Files\mingw64\gcc.ex が見当たりません.`n新規にインストールを行います."
+        $version = $null
     }
-
-
-    if ( $URL -match $version) {
-        Write-Output "`n現在使用中のMinGWは最新版です.`nアップデートを終了します."
+ 
+ 
+    
+    # MinGWのダウンロード. 
+    curl.exe -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
+ 
+    # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード
+    curl.exe -OL https://www.7-zip.org/a/7zr.exe
+ 
+    # 解凍
+    .\7zr.exe x .\x86*win32-seh*.7z  # mingw64 ってフォルダが出来るはず
+ 
+    # 後片付け
+    Remove-Item -Recurse -Force .\7zr.exe, .\x86*win32-seh*.7z
+ 
+    # フォルダの移動
+    Move-Item -force .\mingw64 'C:\Program Files\'  # 同名ファイルがあっても強制移動
+ 
+    if ($null -eq $version) {
+        Write-Output "MinGWの新規インストールに成功しました."
+        Write-Output "PATH: C:\Program Files\mingw64"
     }
     else {
-        # MinGWのダウンロード. 
-        curl.exe -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
-
-        # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード
-        curl.exe -OL https://www.7-zip.org/a/7zr.exe
-
-        # 解凍
-        .\7zr.exe x .\x86*win32-seh*.7z  # mingw64 ってフォルダが出来るはず
-
-        # 後片付け
-        Remove-Item -Recurse -Force .\7zr.exe, .\x86*win32-seh*.7z
-
-        # フォルダの移動
-        Move-Item -force .\mingw64 'C:\Program Files\'  # 同名ファイルがあっても強制移動
-
         $new_version = $(C:\Program` Files\mingw64\bin\gcc.exe -dumpversion)
         Write-Output "MinGWは $version から $new_version へアップデートされました."
     }
-
+    
+ 
 }
 
 
