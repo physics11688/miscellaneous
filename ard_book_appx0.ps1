@@ -162,13 +162,14 @@ function updateC () {
         }
     }
     else {
-        Write-Output "`nC:\Program Files\mingw64\gcc.ex が見当たりません.`n新規にインストールを行います."
+        Write-Output "`nC:\Program Files\mingw64\gcc.exe が見当たりません.`n新規にインストールを行います."
         $version = $null
     }
  
  
     
     # MinGWのダウンロード. 
+    Set-Location $HOME
     curl.exe -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
  
     # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード
