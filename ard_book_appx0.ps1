@@ -169,7 +169,7 @@ function updateC () {
  
     
     # MinGWのダウンロード. 
-    Set-Location $HOME
+    Set-Location $HOME   # ディレクトリによっては解凍が失敗する
     curl.exe -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
  
     # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード

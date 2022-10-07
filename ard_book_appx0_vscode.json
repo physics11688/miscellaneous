@@ -9,6 +9,15 @@
     "editor.guides.highlightActiveIndentation": true,  // インデント色付け
     "editor.suggestSelection": "first",      // サジェスト
     "terminal.external.windowsExec": "${env:USERPROFILE}\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe",
+    "terminal.integrated.profiles.windows": {
+        "PowerShell 7": {
+            "path": [
+                "${env:USERPROFILE}\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe",
+            ],
+            "icon": "terminal-powershell"
+        },
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell 7",
 
     /* C/C++ を書いてるときだけこの設定になる */
     "[c]": {
