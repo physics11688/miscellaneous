@@ -8,6 +8,7 @@
     "editor.guides.bracketPairs": true,                // かっこの間を見えるように
     "editor.guides.highlightActiveIndentation": true,  // インデント色付け
     "editor.suggestSelection": "first",      // サジェスト
+    "terminal.external.windowsExec": "${env:USERPROFILE}\\AppData\\Local\\Microsoft\\WindowsApps\\pwsh.exe",
 
     /* C/C++ を書いてるときだけこの設定になる */
     "[c]": {
