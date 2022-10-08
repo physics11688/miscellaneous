@@ -182,5 +182,5 @@ PROMPT='
 
 bindkey "^[f" forward-word
 bindkey "^[b" backward-word
-bindkey "^[[A" backward-kill-word
-bindkey "^[[B" yank
+bindkey "Ω" backward-kill-word
+bindkey "≈" yank
