@@ -124,9 +124,10 @@ def JavaSetting():
     path_to_zshrc = path_to_HOME + "/.zshrc"
     if not os.path.exists(path_to_zshrc):
         with open(path_to_zshrc, mode='w+') as f:
-            f.write('\nexport PATH="/opt/homebrew/opt/openjdk/bin:$PATH"\n\n')
+            f.write(
+                '\nJAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"\nexport PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"\n\n')
             comment = comment + \
-                'そもそもなんもzshrcの設定がなされていないです.\n【JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"】\n【export PATH="${JAVA_HOME}/Contents/Home/bin:$PATH"】の2行 はこちらで書き込みました.\n\n'
+                'そもそもなんもzshrcの設定がなされていないです.\n【JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"】\n【export PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"】の2行 はこちらで書き込みました.\n\n'
     else:  # JAVA_HOMEの設定 (.zshrc自体はある)
         with open(path_to_zshrc, mode='r') as f:  # 読み込み
             javahome_check = False  # 内容のチェック
@@ -146,13 +147,13 @@ def JavaSetting():
     with open(path_to_zshrc, mode='r') as f:  # .zshrcのチェック
         path_check = False
         for line in f:
-            if 'export PATH="${JAVA_HOME}/Contents/Home/bin:$PATH"' in line:
+            if 'export PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"' in line:
                 path_check = True
     if not path_check:
         with open(path_to_zshrc, mode='a') as f:  # 追記
-            f.write('\nexport PATH="${JAVA_HOME}/Contents/Home/bin:$PATH"\n')
+            f.write('\nexport PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"\n')
             comment = comment + \
-                'Java を書きやすくする設定 3. は実行されていませんでした.\n【export PATH="${JAVA_HOME}/Contents/Home/bin:$PATH"】 という行をこちらで書き込みました.\nもし他の不具合がある場合は,ターミナルを開いて\n      open -t ~/.zshrc \nを実行して中身をチェックしてみてください.'
+                'Java を書きやすくする設定 3. は実行されていませんでした.\n【export PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"】 という行をこちらで書き込みました.\nもし他の不具合がある場合は,ターミナルを開いて\n      open -t ~/.zshrc \nを実行して中身をチェックしてみてください.'
     else:
         comment = comment + \
             '「Java を書きやすくする設定 3」は(おそらく)正しく行われています.\nもし他の不具合がある場合は,ターミナルを開いて\n      open -t ~/.zshrc \nを実行して中身をチェックしてみてください.'
