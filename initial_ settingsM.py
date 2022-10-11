@@ -1,14 +1,15 @@
-from importlib.resources import path
+
 import PySimpleGUI as sg
-from unittest import result
-import urllib.request
 import os
 import subprocess
-import re
+import platform
 
+pf = platform.system()
+if 'Darwin' != pf:
+    print(f"あなたが使用しているOSは {pf} ですが,\nこれはMac専用のプログラムのため何もせず終了します.")
+    input("\n続行するにはなにかキーを押してください.")
+    exit(0)
 
-# $ arch
-# arm64
 
 # PySimpleGUIの確認
 freeze_output = subprocess.run("pip3 freeze", capture_output=True, text=True, shell=True).stdout
@@ -125,22 +126,22 @@ def JavaSetting():
     if not os.path.exists(path_to_zshrc):
         with open(path_to_zshrc, mode='w+') as f:
             f.write(
-                '\nJAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"\nexport PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"\n\n')
+                '\nexport JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"\nexport PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"\n\n')
             comment = comment + \
-                'そもそもなんもzshrcの設定がなされていないです.\n【JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"】\n【export PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"】の2行 はこちらで書き込みました.\n\n'
+                'そもそもなんもzshrcの設定がなされていないです.\n【export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"】\n【export PATH="${JAVA_HOME}/Contents/Home/bin:${PATH}"】の2行 はこちらで書き込みました.\n\n'
     else:  # JAVA_HOMEの設定 (.zshrc自体はある)
         with open(path_to_zshrc, mode='r') as f:  # 読み込み
             javahome_check = False  # 内容のチェック
             for line in f:
-                if 'JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"' in line:
+                if 'export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"' in line:
                     javahome_check = True
         if javahome_check:
             comment = comment + \
                 '「Java を書きやすくする設定 2」は(おそらく)正しく行われています.\n\nもし他の不具合がある場合は,ターミナルを開いて\n      open -t ~/.zshrc \nを実行して中身をチェックしてみてください.\n\n'
         else:
             with open(path_to_zshrc, mode='a') as f:   # 追記
-                f.write('\nJAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"\n')
-                comment = comment + '「Java を書きやすくする設定 2」は正しく実行されていませんでした.\n【JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"】 という行をこちらで書き込みました.\nもし他の不具合がある場合は,ターミナルを開いて\n      open -t ~/.zshrc \nを実行して中身をチェックしてみてください.\n\n'
+                f.write('\nexport JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"\n')
+                comment = comment + '「Java を書きやすくする設定 2」は正しく実行されていませんでした.\n【export JAVA_HOME="/Library/Java/JavaVirtualMachines/openjdk.jdk"】 という行をこちらで書き込みました.\nもし他の不具合がある場合は,ターミナルを開いて\n      open -t ~/.zshrc \nを実行して中身をチェックしてみてください.\n\n'
 
     # Javaの設定確認3
     # PATHを通す export PATH="${{JAVA_HOME}}/Contents/Home/bin:$PATH"
