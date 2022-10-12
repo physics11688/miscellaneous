@@ -57,6 +57,11 @@ function gitpush ($Arg) {
    
 }
 
+# ポート確認
+function showp() {
+    python -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
+}
+
 
 # git status表示のため
 Import-Module posh-git
@@ -86,6 +91,7 @@ function prompt () {
 #Set-Alias micro "C:\Users\tyama\local\bin\micro-2.0.10\micro.exe"
 #Set-Alias touch "$HOME\local\bin\touch.exe"
 Set-Alias grep Select-String
+Set-Alias which where.exe
 
 # 絶対必要. 
 Import-Module PSReadLine
