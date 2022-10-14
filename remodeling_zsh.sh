@@ -93,6 +93,7 @@ alias bk="cd -"
 alias rm="trash"                     # brew install trash
 alias update="brew update && brew upgrade && brew upgrade --cask"
 alias macupdate="softwareupdate --install --all"
+alias updatezinit="zinit self-update --all && zinit update"
 alias m="micro"
 
 
@@ -173,7 +174,6 @@ preexec() {
 function showp () {
     python3 -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
 }
-
 
 PROMPT='
 [%B%F{cyan}%n%f%b@Mac:%F{yellow}%~%f]
