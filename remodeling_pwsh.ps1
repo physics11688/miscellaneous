@@ -11,6 +11,12 @@ Import-Module Get-ChildItemColor
 # git logなどのマルチバイト文字を表示させるため (絵文字含む)
 #$env:LESSCHARSET = "utf-8"
 
+# 管理者権限の確認
+function isAdmin {  
+    $user = [Security.Principal.WindowsIdentity]::GetCurrent()
+    return (New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)  
+}
+
 # printpathでPATHの表示
 function PrintPath {
    ($Env:Path).Split(";")
@@ -71,6 +77,19 @@ Import-Module posh-git
 # プロンプトの変更
 # 色とかを変更したいときは -> https://qiita.com/Kosen-amai/items/134987a9edc6fe3f547c
 function prompt () {
+    if (isAdmin) {
+    $(Write-Host -NoNewline "`r`n" -ForegroundColor White) `
+        + $(Write-Host -NoNewline "[" -ForegroundColor White) `
+        + $(Write-Host -NoNewline "root" -ForegroundColor Red) `
+        + $(Write-Host -NoNewline "%" -ForegroundColor White) `
+        + $(Write-Host -NoNewline $($env:USERNAME) -ForegroundColor Cyan) `
+        + $(Write-Host -NoNewline "@" -ForegroundColor White) `
+        + $(Write-Host -NoNewline $(get-location) -ForegroundColor DarkGreen) `
+        + $(Write-Host -NoNewline "]" -ForegroundColor White) `
+        + $(Write-VcsStatus) `
+        + "`r`n> "
+    }
+    else{
     $(Write-Host -NoNewline "`r`n" -ForegroundColor White) `
         + $(Write-Host -NoNewline "[" -ForegroundColor White) `
         + $(Write-Host -NoNewline $($env:USERNAME) -ForegroundColor Cyan) `
@@ -78,7 +97,8 @@ function prompt () {
         + $(Write-Host -NoNewline $(get-location) -ForegroundColor DarkGreen) `
         + $(Write-Host -NoNewline "]" -ForegroundColor White) `
         + $(Write-VcsStatus) `
-        + "`r`n> " 
+        + "`r`n> "
+    }
 }
 
 
