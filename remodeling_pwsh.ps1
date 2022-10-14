@@ -108,6 +108,7 @@ function prompt () {
 #Set-Alias touch "$HOME\local\bin\touch.exe"
 Set-Alias grep Select-String
 Set-Alias which where.exe
+Set-Alias bk cd-
 
 # 絶対必要. 
 Import-Module PSReadLine
