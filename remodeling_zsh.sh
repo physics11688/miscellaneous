@@ -94,6 +94,7 @@ alias rm="trash"                     # brew install trash
 alias update="brew update && brew upgrade && brew upgrade --cask"
 alias macupdate="softwareupdate --install --all"
 alias updatezinit="zinit self-update --all && zinit update"
+alias pipupdate="pip3 list -o | tail -n +3 | awk '{ print \$1 }' | xargs pip3 install -U"
 alias m="micro"
 
 
@@ -173,6 +174,10 @@ preexec() {
 
 function showp () {
     python3 -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
+}
+
+function printpath {
+    python3 -c "import os;print(os.getenv('PATH').replace(':','\n'))"
 }
 
 PROMPT='
