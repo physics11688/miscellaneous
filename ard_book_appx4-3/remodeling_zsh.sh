@@ -183,7 +183,7 @@ alias rm="trash-put"
 alias update="sudo apt update && sudo apt -y upgrade"
 alias updatezinit="zinit self-update --all && zinit update"
 alias m="micro"
-alias r="ranger"
+alias r="ranger_cd"
 
 export PATH=$PATH:/snap/bin
 
