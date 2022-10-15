@@ -96,6 +96,7 @@ alias macupdate="softwareupdate --install --all"
 alias updatezinit="zinit self-update --all && zinit update"
 alias pipupdate="pip3 list -o | tail -n +3 | awk '{ print \$1 }' | xargs pip3 install -U"
 alias m="micro"
+alias ports='netstat -tulanp'
 
 
 

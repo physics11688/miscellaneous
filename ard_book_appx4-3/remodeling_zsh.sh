@@ -184,6 +184,7 @@ alias update="sudo apt update && sudo apt -y upgrade"
 alias updatezinit="zinit self-update --all && zinit update"
 alias m="micro"
 alias r="ranger-cd"
+alias ports='netstat -tulanp'
 
 export PATH=$PATH:/snap/bin
 
