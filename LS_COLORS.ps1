@@ -3,7 +3,7 @@
 # https://4sysops.com/archives/using-powershell-with-psstyle/
 # pwshのprofile で読み込め →  . path\to\LC_CORLS.ps1 
 
-$PSStyle.FileInfo.Directory = "`e[38;5;36m" # ディレクトリは緑
+$PSStyle.FileInfo.Directory = "`e[38;5;30m" # ディレクトリは緑
 $PSStyle.FileInfo.Extension[".txt"] = "`e[38;5;253m"
 $PSStyle.FileInfo.Extension[".log"] = "`e[38;5;190m"
 $PSStyle.FileInfo.Extension[".adoc"] = "`e[38;5;184m"
