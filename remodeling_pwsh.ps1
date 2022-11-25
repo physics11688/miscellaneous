@@ -33,7 +33,7 @@ Set-Alias ll CustomListChildItems
 
 # sudo
 function CustomSudo () {
-    Start-Process wt -ArgumentList "-p pwsh.exe" -Verb runas
+    Start-Process wt -ArgumentList "-p PowerShell" -Verb runas
 }
 Set-Alias sudo CustomSudo
   
