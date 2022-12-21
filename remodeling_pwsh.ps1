@@ -1,5 +1,5 @@
 # lsの色付け
-Import-Module Get-ChildItemColor
+# Import-Module Get-ChildItemColor
 
 
 # 2021/12/14追記. だめです. ターミナルから文字を拾うコードで難が出ます.
@@ -167,8 +167,9 @@ function updateC () {
     winget upgrade LLVM.LLVM
        
     # MinGWのダウンロードURLを取得して 変数URL にセット 
-    $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86.*win32-seh.*7z" | ForEach-Object { $_.Matches.Value }
- 
+    $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86.*win32-seh-ucrt.*7z" | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+    
+    
     if ($null -eq $URL) {
         Write-Output "`nMingWのダウンロードURL取得に失敗しました`n後で再度試してみてください."
         exit
