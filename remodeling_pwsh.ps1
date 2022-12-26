@@ -162,14 +162,14 @@ $env:path += ";$env:ProgramFiles\LLVM\bin"    # clangのPATHをprofileで追加�
 $env:path += ";$env:ProgramFiles\mingw64\bin" # 一応・・・
 
 # C環境のアップデート. 管理者権限のときだけ使える。
+# C環境のアップデート. 管理者権限のときだけ使える。
 function updateC () {
     # LLVMのアップデート
     winget upgrade LLVM.LLVM
        
     # MinGWのダウンロードURLを取得して 変数URL にセット 
-    $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86.*win32-seh-ucrt.*7z" | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
-    
-    
+    $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86_64.*posix-seh-ucrt.*7z" | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
+ 
     if ($null -eq $URL) {
         Write-Output "`nMingWのダウンロードURL取得に失敗しました`n後で再度試してみてください."
         exit
@@ -194,16 +194,16 @@ function updateC () {
     
     # MinGWのダウンロード. 
     Set-Location $HOME   # ディレクトリによっては解凍が失敗する
-    curl.exe -OL "$URL"     # > ls .\x86*win32-seh*.7zでファイルを確認しておくといい
+    curl.exe -OL "$URL"     # > ls .\x86*posix-seh-ucrt*.7zでファイルを確認しておくといい
  
     # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード
     curl.exe -OL https://www.7-zip.org/a/7zr.exe
  
     # 解凍
-    .\7zr.exe x .\x86*win32-seh*.7z  # mingw64 ってフォルダが出来るはず
+    .\7zr.exe x .\x86*posix-seh-ucrt*.7z  # mingw64 ってフォルダが出来るはず
  
     # 後片付け
-    Remove-Item -Recurse -Force .\7zr.exe, .\x86*win32-seh*.7z
+    Remove-Item -Recurse -Force .\7zr.exe, .\x86*posix-seh-ucrt*.7z
  
     # フォルダの移動
     Move-Item -force .\mingw64 'C:\Program Files\'  # 同名ファイルがあっても強制移動
