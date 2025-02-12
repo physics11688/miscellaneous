@@ -1,0 +1,36 @@
+{
+    "version": "2.0.0",
+    // https://code.visualstudio.com/docs/editor/tasks
+    "tasks": [
+        {
+            "type": "cppbuild",
+            "label": "C/C++: gcc アクティブなファイルをビルドしてデバッグ", // タスクの名前
+            "command": "/usr/bin/gcc", // F5押すと gcc が実行される
+            "args": [ // 引数を指定していく
+                "-fdiagnostics-color=always", // 表示に色を使用
+                "-g3", // デバッグ情報を作成. g3でマクロの展開が可能になる.
+                "-ggdb", // デバッグ情報を作成. gdb専用なので移植性はない.
+                "-O0", // 最適化しない
+                // "-static", // 静的リンクにしといて全部埋め込んでおく
+                "${file}", // 今開いてるファイル. main.cとか
+                "-o", // 出力ファイルの名前指定
+                "${fileDirname}/${fileBasenameNoExtension}", // main.o とかになる
+                "-Wall", // 警告関係のオプション1
+                "-Wextra", // 警告関係のオプション2
+                // "-I",      // ヘッダファイルが同じディレクトリにないなら追加
+                // "~/c_src/???"  // ヘッダファイルが同じディレクトリにないなら追加
+            ],
+            "options": {
+                "cwd": "${fileDirname}" // カレントワーキングディレクトリ
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "デバッガーによって生成されたタスク。"
+        }
+    ],
+}

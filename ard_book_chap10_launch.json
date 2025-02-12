@@ -1,0 +1,31 @@
+{
+    "version": "0.2.0",
+    // https://code.visualstudio.com/docs/cpp/launch-json-reference
+    "configurations": [
+        {
+            "name": "C/C++ Runner: Debug Session", // 名前は固定の必要あり
+            "type": "cppdbg",
+            "request": "launch",
+            "args": [], // 実行ファイルに引数が指定できる
+            "stopAtEntry": false, // trueにするとエントリーポイントで一旦停止.つまりmain()の初めで止まる.
+            "externalConsole": false, // WSLでは使用不可. 外部ターミナル起動.
+            "cwd": "${fileDirname}", // ワーキングディレクトリ. ここに移動して実行.
+            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "MIMode": "gdb", // lldbじゃなくてgdb
+            "miDebuggerPath": "gdb", // デバッガへのパス.まあどうせパスが通っている.
+            "setupCommands": [ // GDBへのコマンド
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing", // デバッグの内容が読みやすくなる
+                    "ignoreFailures": true, // 失敗しても停止しない
+                },
+                {
+                    "description": "Relace absolute path of source code",
+                    "text": "set directories /usr/src/glibc/glibc-2.35/", // glibcのソースコードを参照する設定.2.35の所は自分の環境に合わせて変える.
+                    "ignoreFailures": false,
+                }
+            ],
+            "preLaunchTask": "C/C++: gcc アクティブなファイルをビルドしてデバッグ" // GDB起動の前にtasks.jsonの内容でプログラムをビルドしてね
+        }
+    ]
+}
