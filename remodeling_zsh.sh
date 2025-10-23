@@ -173,13 +173,14 @@ preexec() {
     print -Pn "\e]0;%~ :: $1\a"
 }
 
-function showp () {
+showp () {
     python3 -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
 }
 
-function printpath {
+printpath() {
     python3 -c "import os;print(os.getenv('PATH').replace(':','\n'))"
 }
+
 
 PROMPT='
 [%B%F{cyan}%n%f%b@Mac:%F{yellow}%~%f]

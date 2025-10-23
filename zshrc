@@ -193,10 +193,13 @@ function ranger-cd {
     rm -f -- "$tempfile"
 }
 
-function printpath {
-    python3 -c "import os;print(os.getenv('PATH').replace(':','\n'))"
+showp () {
+    python3 -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
 }
 
+printpath() {
+    python3 -c "import os;print(os.getenv('PATH').replace(':','\n'))"
+}
 # alias
 alias ls='ls -FG --color=auto'
 alias ll='ls -alFG --color=auto'
