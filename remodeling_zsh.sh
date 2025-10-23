@@ -190,21 +190,55 @@ PROMPT='
 #[%B%F{cyan}%n%f%b:%F{yellow}%~%f]
 #%B%F{red}$%f%b '
 
-# Ctrl + ← / → : 単語単位で移動
-bindkey "^[[1;5C" forward-word   # Linux / iTerm2
-bindkey "^[[5C"   forward-word   # macOS Terminal
-bindkey "^[[1;5D" backward-word
-bindkey "^[[5D"   backward-word
-bindkey "^H" backward-kill-word  # iTerm2 / macOS用（Ctrl+Backspace）
-bindkey "^?" backward-kill-word  # Linux用
-bindkey "^[3;5~" kill-word       # Ctrl+Delete（Linux / mac）
-# Ctrl + A / E : 行頭・行末
-bindkey "^A" beginning-of-line
-bindkey "^E" end-of-line
+# OS判定してキーバインドを切り替え
+if [[ "$(uname)" == "Darwin" ]]; then
+    # --- macOS 用 (Optionキーで操作) ---
 
-# Ctrl + K / U : 行末・行頭まで削除
-bindkey "^K" kill-line
-bindkey "^U" backward-kill-line
+    # 単語単位の移動
+    bindkey "^[[1;3D" backward-word   # Option + ←
+    bindkey "^[[1;3C" forward-word    # Option + →
 
-# Ctrl + Y : yank（直前に削除した文字列を貼り付け）
-bindkey "^Y" yank
+    # 単語単位削除 (Option + Backspace)
+    bindkey "^[^?" backward-kill-word
+
+    # 文字単位削除 (Backspace)
+    bindkey "^?" backward-delete-char
+
+    # 行頭 / 行末 (Option + A / Option + E)
+    bindkey "^[a" beginning-of-line
+    bindkey "^[e" end-of-line
+
+    # 行削除 (Option + K / Option + U)
+    bindkey "^[k" kill-line           # カーソルから行末まで削除
+    bindkey "^[u" backward-kill-line  # カーソルから行頭まで削除
+
+    # 単語削除 (Option + D / Option + Delete)
+    bindkey "^[d" kill-word
+
+    # 貼り付け (Option + Y)
+    bindkey "^[y" yank
+
+else
+    # --- Linux 用 (Ctrlキーで操作) ---
+
+    # Ctrl + ← / → : 単語単位移動
+    bindkey "^[[1;5D" backward-word
+    bindkey "^[[1;5C" forward-word
+    bindkey "^[[5D"   backward-word  # 一部の端末対策
+    bindkey "^[[5C"   forward-word
+
+    # 単語単位削除 (Ctrl + Backspace / Ctrl + Delete)
+    bindkey "^H" backward-kill-word
+    bindkey "^[3;5~" kill-word
+
+    # 行頭 / 行末
+    bindkey "^A" beginning-of-line
+    bindkey "^E" end-of-line
+
+    # 行削除
+    bindkey "^K" kill-line
+    bindkey "^U" backward-kill-line
+
+    # 貼り付け
+    bindkey "^Y" yank
+fi
