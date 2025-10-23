@@ -204,9 +204,9 @@ alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias bk="cd -"
-alias rm="trash-put"
 alias update="sudo apt update && sudo apt -y upgrade"
-alias m="micro"
+command -v trash-put >/dev/null && alias rm="trash-put"
+command -v micro >/dev/null && alias m="micro"
 
 export LANG=ja_JP.UTF-8
 

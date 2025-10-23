@@ -90,12 +90,12 @@ alias grep='ggrep --color=auto'
 alias fgrep='gfgrep --color=auto'
 alias egrep='gegrep --color=auto'
 alias bk="cd -"
-alias rm="trash"                     # brew install trash
 alias update="brew update && brew upgrade && brew upgrade --cask"
 alias macupdate="softwareupdate --install --all"
 alias updatezinit="zinit self-update --all && zinit update"
 alias pipupdate="pip3 list -o | tail -n +3 | awk '{ print \$1 }' | xargs pip3 install -U"
-alias m="micro"
+command -v trash >/dev/null && alias rm="trash"
+command -v micro >/dev/null && alias m="micro"
 alias ports='netstat -tulanp'
 
 

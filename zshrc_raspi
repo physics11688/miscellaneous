@@ -218,11 +218,11 @@ alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias bk="cd -"
-alias rm="trash-put"
 alias update="sudo apt update && sudo apt -y upgrade"
 alias zupdate="zinit self-update --all && zinit update"
 alias pipupdate="pip3 list -o | tail -n +3 | awk '{ print \$1 }' | xargs pip3 install -U"
-alias m="micro"
+command -v trash-put >/dev/null && alias rm="trash-put"
+command -v micro >/dev/null && alias m="micro"
 
 # Ctrl + ← / → : 単語単位で移動
 bindkey "^[[1;5C" forward-word   # Linux / iTerm2
