@@ -190,7 +190,7 @@ PROMPT='
 #[%B%F{cyan}%n%f%b:%F{yellow}%~%f]
 #%B%F{red}$%f%b '
 
-# OS判定してキーバインドを切り替え
+## OS判定してキーバインドを切り替え
 if [[ "$(uname)" == "Darwin" ]]; then
     # --- macOS 用 (Optionキーで操作) ---
 
@@ -200,6 +200,10 @@ if [[ "$(uname)" == "Darwin" ]]; then
 
     # 単語単位削除 (Option + Backspace)
     bindkey "^[^?" backward-kill-word
+
+    # 単語単位削除・貼り付け (Option + ↑  Optionl + ↓)
+    bindkey "^[[1;3A" backward-kill-word
+    bindkey "^[[1;3B" yank
 
     # 文字単位削除 (Backspace)
     bindkey "^?" backward-delete-char

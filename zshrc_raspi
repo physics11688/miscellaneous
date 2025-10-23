@@ -224,6 +224,8 @@ alias pipupdate="pip3 list -o | tail -n +3 | awk '{ print \$1 }' | xargs pip3 in
 command -v trash-put >/dev/null && alias rm="trash-put"
 command -v micro >/dev/null && alias m="micro"
 
+export LANG=ja_JP.UTF-8
+
 # OS判定してキーバインドを切り替え
 if [[ "$(uname)" == "Darwin" ]]; then
     # --- macOS 用 (Optionキーで操作) ---
@@ -234,6 +236,10 @@ if [[ "$(uname)" == "Darwin" ]]; then
 
     # 単語単位削除 (Option + Backspace)
     bindkey "^[^?" backward-kill-word
+
+    # 単語単位削除・貼り付け (Option + ↑  Optionl + ↓)
+    bindkey "^[[1;3A" backward-kill-word
+    bindkey "^[[1;3B" yank
 
     # 文字単位削除 (Backspace)
     bindkey "^?" backward-delete-char
@@ -276,5 +282,3 @@ else
     # 貼り付け
     bindkey "^Y" yank
 fi
-
-export LANG=ja_JP.UTF-8
