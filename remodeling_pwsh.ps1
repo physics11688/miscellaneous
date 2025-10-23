@@ -12,19 +12,26 @@
 #$env:LESSCHARSET = "utf-8"
 
 # 管理者権限の確認
-function isAdmin {  
+function isAdmin {
     $user = [Security.Principal.WindowsIdentity]::GetCurrent()
-    return (New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)  
+    return (New-Object Security.Principal.WindowsPrincipal $user).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
 
 # printpathでPATHの表示
-function PrintPath {
-   ($Env:Path).Split(";")
+function PrintPath($Arg) {
+    if ($Arg) {
+        ($Env:Path).Split(";") | Select-String -Pattern $Arg
+    }
+    else {
+        ($Env:Path).Split(";")
+    }
 }
+
+Set-Alias path PrintPath
 
 # ls -latと同じ
 function CustomListChildItems () {
-    Get-ChildItem $args[0] -force | Sort-Object -Property @{ Expression = 'LastWriteTime'; Descending = $true }, @{ Expression = 'Name'; Ascending = $true } | Format-Table -AutoSize -Property Mode, Length, LastWriteTime, Name 
+    Get-ChildItem $args[0] -force | Sort-Object -Property @{ Expression = 'LastWriteTime'; Descending = $true }, @{ Expression = 'Name'; Ascending = $true } | Format-Table -AutoSize -Property Mode, Length, LastWriteTime, Name
 }
 # aliasの設定
 Set-Alias ll CustomListChildItems
@@ -36,32 +43,33 @@ function CustomSudo () {
     Start-Process wt -ArgumentList "-p PowerShell" -Verb runas
 }
 Set-Alias sudo CustomSudo
-  
+
 function CustomHosts () {
     Start-Process code C:\Windows\System32\drivers\etc\hosts -verb runas
 }
 Set-Alias hosts CustomHosts
- 
+
 function CustomUpdate () {
     explorer ms-settings:windowsupdate
 }
 Set-Alias update CustomUpdate
- 
+
 function UpdateAllpip () {
-    pip freeze | ForEach-Object { $_.split('==')[0] } | ForEach-Object { pip install --upgrade $_ }
+    py -m pip list --outdated | Select-Object -Skip 2 | ForEach-Object { py -m pip install --upgrade ($_.Split()[0]) }
 }
 Set-Alias pipupdate UpdateAllpip
+
 
 function gitpush ($Arg) {
     git add .
     git commit -m $Arg
     git push
-   
+
 }
 
 # ポート確認
 function showp() {
-    python -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
+    py -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
 }
 
 
@@ -110,7 +118,7 @@ Set-Alias grep Select-String
 Set-Alias which where.exe
 Set-Alias bk cd-
 
-# 絶対必要. 
+# 絶対必要.
 Import-Module PSReadLine
 
 # 色の設定
@@ -151,11 +159,33 @@ Set-PSReadLineOption -Colors @{ InlinePrediction = '#9CA3AF' }
 # Ctrl + D で終了
 Set-PSReadlineKeyHandler -Key ctrl+d -Function DeleteCharOrExit
 
-# Ctrl + ← → で単語移動 (単語の削除はCtrl + W or ↑)
-Set-PSReadlineKeyHandler -Key Ctrl+LeftArrow -Function ShellBackwardWord
-Set-PSReadlineKeyHandler -Key ctrl+rightArrow -Function ShellForwardWord
-Set-PSReadlineKeyHandler -Key ctrl+upArrow -Function UnixWordRubout
-Set-PSReadlineKeyHandler -Key ctrl+downArrow -Function Yank
+# Ctrl + ← / → ：単語単位で移動
+Set-PSReadLineKeyHandler -Chord Ctrl+LeftArrow  -Function BackwardWord
+Set-PSReadLineKeyHandler -Chord Ctrl+RightArrow -Function ForwardWord
+
+# Ctrl + Backspace ：前の単語を削除
+Set-PSReadLineKeyHandler -Chord Ctrl+Backspace -Function BackwardKillWord
+
+# Ctrl + Delete ：次の単語を削除
+Set-PSReadLineKeyHandler -Chord Ctrl+Delete -Function KillWord
+
+# Ctrl + U ：行頭まで削除
+Set-PSReadLineKeyHandler -Chord Ctrl+u -Function BackwardKillLine
+
+# Ctrl + K ：行末まで削除
+Set-PSReadLineKeyHandler -Chord Ctrl+k -Function KillLine
+
+# Ctrl + Y ：直前に削除した内容を貼り付け（yank）
+Set-PSReadLineKeyHandler -Chord Ctrl+y -Function Yank
+
+# Ctrl + L ：画面クリア
+Set-PSReadLineKeyHandler -Chord Ctrl+l -Function ClearScreen
+
+# Ctrl + R ：履歴検索（インクリメンタルサーチ）
+Set-PSReadLineKeyHandler -Chord Ctrl+r -Function ReverseSearchHistory
+
+# Alt + . ：直前のコマンドの最後の引数を挿入（bash互換）
+Set-PSReadLineKeyHandler -Chord Alt+. -Function YankLastArg
 
 
 $env:path += ";$env:ProgramFiles\LLVM\bin"    # clangのPATHをprofileで追加しとく.アップデートのたびに消えるし.
@@ -163,62 +193,108 @@ $env:path += ";$env:ProgramFiles\mingw64\bin" # 一応・・・
 
 # C環境のアップデート. 管理者権限のときだけ使える。
 # C環境のアップデート. 管理者権限のときだけ使える。
-function updateC () {
-    # LLVMのアップデート
-    winget upgrade LLVM.LLVM
-       
-    # MinGWのダウンロードURLを取得して 変数URL にセット 
-    $URL = curl.exe -s https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest | Select-String -Pattern "https.*x86_64.*posix-seh-ucrt.*7z" | ForEach-Object { $_.Matches.Value } | Select-Object -First 1
- 
-    if ($null -eq $URL) {
-        Write-Output "`nMingWのダウンロードURL取得に失敗しました`n後で再度試してみてください."
-        exit
+function updateC {
+    <#
+    .SYNOPSIS
+        LLVM と MinGW の自動アップデートを行う
+    .NOTES
+        PowerShell 7+ 対応
+    #>
+
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    $ErrorActionPreference = "Stop"
+    $mingwPath = "C:\Program Files\mingw64"
+    $gccPath = Join-Path $mingwPath "bin\gcc.exe"
+    $sevenZipUrl = "https://www.7-zip.org/a/7zr.exe"
+    $githubApiUrl = "https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest"
+
+    try {
+        Write-Host "`n=== LLVMのアップデート ==="
+        winget upgrade --id LLVM.LLVM --accept-source-agreements --accept-package-agreements | Out-Host
     }
- 
-    if (Test-Path 'C:\Program Files\mingw64\bin\gcc.exe') {
-        $version = $(C:\Program` Files\mingw64\bin\gcc.exe -dumpversion)
-        if ( $URL -match $version) {
-            Write-Output "`n現在使用中のMinGWは最新版です.`nアップデートを終了します."
-            return $true
+    catch {
+        Write-Warning "LLVM のアップデートでエラーが発生しました: $_"
+    }
+
+    Write-Host "`n=== MinGW の最新版URL取得 ==="
+    try {
+        $URL = (curl.exe -s $githubApiUrl |
+            Select-String -Pattern "https.*x86_64.*posix-seh-ucrt.*7z" |
+            ForEach-Object { $_.Matches.Value } |
+            Select-Object -First 1)
+
+        if (-not $URL) {
+            throw "GitHub APIからMinGWのURLを取得できませんでした。"
         }
-        else {
-            Write-Output "`n現在使用中のMinGWを最新版にアップデートします."
-        }
+        Write-Host "取得URL: $URL"
+    }
+    catch {
+        Write-Error $_
+        return
+    }
+
+    # 既存バージョンチェック
+    $currentVersion = if (Test-Path $gccPath) { & $gccPath -dumpversion } else { $null }
+
+    if ($currentVersion -and ($URL -match [Regex]::Escape($currentVersion))) {
+        Write-Host "`n現在のMinGW ($currentVersion) は最新版です。アップデート不要。"
+        return
+    }
+
+    if ($currentVersion) {
+        Write-Host "`nMinGW ($currentVersion) を最新版にアップデートします。"
     }
     else {
-        Write-Output "`nC:\Program Files\mingw64\gcc.exe が見当たりません.`n新規にインストールを行います."
-        $version = $null
+        Write-Host "`nMinGWを新規インストールします。"
     }
- 
- 
-    
-    # MinGWのダウンロード. 
-    Set-Location $HOME   # ディレクトリによっては解凍が失敗する
-    curl.exe -OL "$URL"     # > ls .\x86*posix-seh-ucrt*.7zでファイルを確認しておくといい
- 
-    # MinGWは特殊な形式で圧縮されてるので, 解凍用のソフトをダウンロード
-    curl.exe -OL https://www.7-zip.org/a/7zr.exe
- 
+
+    # 作業用フォルダ
+    $tempDir = Join-Path $env:TEMP "mingw_update"
+    if (Test-Path $tempDir) { Remove-Item -Recurse -Force $tempDir }
+    New-Item -ItemType Directory -Path $tempDir | Out-Null
+    Set-Location $tempDir
+
+    # 7zr.exe の取得
+    Write-Host "`n7-Zip展開ツールをダウンロード中..."
+    Invoke-WebRequest -Uri $sevenZipUrl -OutFile "7zr.exe"
+
+    # MinGWダウンロード
+    Write-Host "MinGWをダウンロード中..."
+    $archiveName = Split-Path $URL -Leaf
+    Invoke-WebRequest -Uri $URL -OutFile $archiveName
+
     # 解凍
-    .\7zr.exe x .\x86*posix-seh-ucrt*.7z  # mingw64 ってフォルダが出来るはず
- 
-    # 後片付け
-    Remove-Item -Recurse -Force .\7zr.exe, .\x86*posix-seh-ucrt*.7z
- 
-    # フォルダの移動
-    Move-Item -force .\mingw64 'C:\Program Files\'  # 同名ファイルがあっても強制移動
- 
-    if ($null -eq $version) {
-        Write-Output "MinGWの新規インストールに成功しました."
-        Write-Output "PATH: C:\Program Files\mingw64"
+    Write-Host "解凍中..."
+    & .\7zr.exe x $archiveName | Out-Null
+
+    if (-not (Test-Path ".\mingw64")) {
+        Write-Error "mingw64 フォルダが見つかりません。展開に失敗した可能性があります。"
+        return
+    }
+
+    # 上書きインストール
+    Write-Host "`nC:\Program Files\mingw64 にインストール中..."
+    if (Test-Path $mingwPath) {
+        Remove-Item -Recurse -Force $mingwPath
+    }
+    Move-Item -Path ".\mingw64" -Destination "C:\Program Files\" -Force
+
+    # クリーンアップ
+    Set-Location $HOME  # ← ★ 一旦ホームに戻る
+    Remove-Item -Recurse -Force $tempDir
+
+    # 確認
+    $newVersion = & $gccPath -dumpversion
+    if ($currentVersion) {
+        Write-Host "`nMinGWは $currentVersion → $newVersion に更新されました。"
     }
     else {
-        $new_version = $(C:\Program` Files\mingw64\bin\gcc.exe -dumpversion)
-        Write-Output "MinGWは $version から $new_version へアップデートされました."
+        Write-Host "`nMinGW $newVersion のインストールが完了しました。"
     }
-    
- 
+
+    Write-Host "`nPATH: $mingwPath"
 }
+
 
 
 
@@ -226,7 +302,7 @@ function updateC () {
 # http://www.bigsoft.co.uk/blog/2008/04/11/configuring-ls_colors
 # https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797#256-colors
 # https://4sysops.com/archives/using-powershell-with-psstyle/
-# pwshのprofile で読み込め →  . path\to\LC_CORLS.ps1 
+# pwshのprofile で読み込め →  . path\to\LC_CORLS.ps1
 if ($PSVersionTable.PSVersion.ToString() -ge "7.3.0") {
     $PSStyle.FileInfo.Directory = "`e[38;5;30m" # ディレクトリは緑
     $PSStyle.FileInfo.Extension[".exe"] = "`e[38;5;205m"

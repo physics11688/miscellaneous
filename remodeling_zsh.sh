@@ -190,7 +190,21 @@ PROMPT='
 #[%B%F{cyan}%n%f%b:%F{yellow}%~%f]
 #%B%F{red}$%f%b '
 
-bindkey "^[f" forward-word
-bindkey "^[b" backward-word
-bindkey "Ω" backward-kill-word
-bindkey "≈" yank
+# Ctrl + ← / → : 単語単位で移動
+bindkey "^[[1;5C" forward-word   # Linux / iTerm2
+bindkey "^[[5C"   forward-word   # macOS Terminal
+bindkey "^[[1;5D" backward-word
+bindkey "^[[5D"   backward-word
+bindkey "^H" backward-kill-word  # iTerm2 / macOS用（Ctrl+Backspace）
+bindkey "^?" backward-kill-word  # Linux用
+bindkey "^[3;5~" kill-word       # Ctrl+Delete（Linux / mac）
+# Ctrl + A / E : 行頭・行末
+bindkey "^A" beginning-of-line
+bindkey "^E" end-of-line
+
+# Ctrl + K / U : 行末・行頭まで削除
+bindkey "^K" kill-line
+bindkey "^U" backward-kill-line
+
+# Ctrl + Y : yank（直前に削除した文字列を貼り付け）
+bindkey "^Y" yank
