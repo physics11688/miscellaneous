@@ -236,6 +236,10 @@ else
     bindkey "^H" backward-kill-word
     bindkey "^[3;5~" kill-word
 
+    # 単語単位削除・貼り付け (Ctrl + ↑  Ctrl + ↓)
+    bindkey "^[[1;5A" backward-kill-word
+    bindkey "^[[1;5B" yank
+
     # 行頭 / 行末
     bindkey "^A" beginning-of-line
     bindkey "^E" end-of-line

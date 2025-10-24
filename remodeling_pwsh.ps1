@@ -192,7 +192,6 @@ $env:path += ";$env:ProgramFiles\LLVM\bin"    # clangのPATHをprofileで追加�
 $env:path += ";$env:ProgramFiles\mingw64\bin" # 一応・・・
 
 # C環境のアップデート. 管理者権限のときだけ使える。
-# C環境のアップデート. 管理者権限のときだけ使える。
 function updateC {
     <#
     .SYNOPSIS
