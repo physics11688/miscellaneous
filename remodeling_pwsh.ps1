@@ -162,6 +162,8 @@ Set-PSReadlineKeyHandler -Key ctrl+d -Function DeleteCharOrExit
 # Ctrl + ← / → ：単語単位で移動
 Set-PSReadLineKeyHandler -Chord Ctrl+LeftArrow  -Function BackwardWord
 Set-PSReadLineKeyHandler -Chord Ctrl+RightArrow -Function ForwardWord
+Set-PSReadLineKeyHandler -Chord Ctrl+UpArrow  -Function BackwardKillWord
+Set-PSReadLineKeyHandler -Chord Ctrl+DownArrow -Function Yank
 
 # Ctrl + Backspace ：前の単語を削除
 Set-PSReadLineKeyHandler -Chord Ctrl+Backspace -Function BackwardKillWord
