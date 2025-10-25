@@ -257,6 +257,8 @@ function updateC {
         Write-Warning "LLVM のアップデートでエラーが発生しました: $_"
     }
 
+    Add-ToUserPath -NewPath "C:\Program Files\LLVM\bin"
+
     Write-Host "`n=== MinGW の最新版URL取得 ==="
     try {
         $URL = (curl.exe -s $githubApiUrl |
