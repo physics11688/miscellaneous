@@ -18,14 +18,21 @@ function isAdmin {
 }
 
 # printpathでPATHの表示
-function PrintPath($Arg) {
-    if ($Arg) {
-        ($Env:Path).Split(";") | Select-String -Pattern $Arg
+function PrintPath {
+    param(
+        [string]$Filter
+    )
+
+    $paths = (Get-ItemProperty -Path "HKCU:\Environment" -Name Path).Path -split ";" | Where-Object { $_ -ne "" }
+
+    if ($Filter) {
+        $paths | Where-Object { $_ -match [regex]::Escape($Filter) } | ForEach-Object { "$_" }
     }
     else {
-        ($Env:Path).Split(";")
+        $paths | ForEach-Object { "$_" }
     }
 }
+
 
 Set-Alias path PrintPath
 
