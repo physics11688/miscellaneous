@@ -204,7 +204,7 @@ function updateC {
 
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     $ErrorActionPreference = "Stop"
-    $mingwPath = "C:\Program Files\mingw64"
+    $mingwPath = "$HOME\mingw64"
     $gccPath = Join-Path $mingwPath "bin\gcc.exe"
     $sevenZipUrl = "https://www.7-zip.org/a/7zr.exe"
     $githubApiUrl = "https://api.github.com/repos/niXman/mingw-builds-binaries/releases/latest"
@@ -274,11 +274,11 @@ function updateC {
     }
 
     # 上書きインストール
-    Write-Host "`nC:\Program Files\mingw64 にインストール中..."
+    Write-Host "`n$HOME\mingw64\mingw64 にインストール中..."
     if (Test-Path $mingwPath) {
         Remove-Item -Recurse -Force $mingwPath
     }
-    Move-Item -Path ".\mingw64" -Destination "C:\Program Files\" -Force
+    Move-Item -Path ".\mingw64" -Destination "$HOME" -Force
 
     # クリーンアップ
     Set-Location $HOME  # ← ★ 一旦ホームに戻る
