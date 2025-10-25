@@ -72,6 +72,39 @@ function showp() {
     py -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
 }
 
+# 環境変数PATHの追加: Add-ToUserPath -NewPath "your_path"
+function Add-ToUserPath {
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$NewPath
+    )
+
+    # 現在のユーザー環境変数 PATH を取得
+    $currentPath = [Environment]::GetEnvironmentVariable("PATH", "User")
+
+    # すでに含まれているか確認
+    if ($currentPath -split ";" | Where-Object { $_ -eq $NewPath }) {
+        Write-Host "既に PATH に含まれています: $NewPath"
+    }
+    else {
+        # 永続的に追加
+        $updatedPath = "$currentPath;$NewPath"
+        [Environment]::SetEnvironmentVariable("PATH", $updatedPath, "User")
+        Write-Host "ユーザー環境変数 PATH に追加しました: $NewPath"
+    }
+
+    # 現在のセッションにも即時反映
+    if (-not ($env:PATH -split ";" | Where-Object { $_ -eq $NewPath })) {
+        $env:PATH += ";$NewPath"
+        Write-Host "現在のセッションの PATH にも追加しました。"
+    }
+    else {
+        Write-Host "現在のセッションの PATH にも既に含まれています。"
+    }
+}
+
+
 
 # git status表示のため
 Import-Module posh-git
@@ -294,6 +327,7 @@ function updateC {
     }
 
     Write-Host "`nPATH: $mingwPath"
+    Add-ToUserPath -NewPath "$mingwPath\bin"
 }
 
 
