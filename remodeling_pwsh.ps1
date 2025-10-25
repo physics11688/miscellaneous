@@ -193,7 +193,7 @@ Set-PSReadLineKeyHandler -Chord Alt+. -Function YankLastArg
 $env:path += ";$env:ProgramFiles\LLVM\bin"    # clangのPATHをprofileで追加しとく.アップデートのたびに消えるし.
 $env:path += ";$env:ProgramFiles\mingw64\bin" # 一応・・・
 
-# C環境のアップデート. 管理者権限のときだけ使える。
+# C環境のアップデート.
 function updateC {
     <#
     .SYNOPSIS
