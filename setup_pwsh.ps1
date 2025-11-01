@@ -8,7 +8,7 @@ Install-Module PSReadLine -AllowPrerelease -Force  -Scope CurrentUser
 winget install Git.Git   # 入ってなかったら
 
 # 4/5 posh-git
-PowerShellGet\Install-Module posh-git -Scope CurrentUser -Force
+PowerShellGet\Install-Module posh-git -Force -Scope CurrentUser
 
 # 5/5 pyserial
 py -m pip install pyserial
