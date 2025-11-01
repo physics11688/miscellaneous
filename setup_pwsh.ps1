@@ -2,7 +2,7 @@
 Install-Module -Name PowerShellGet -Force -Scope CurrentUser # 多分もう入ってる
 
 # 2/5 コマンドとかを補完しまくりになる
-Install-Module PSReadLine -AllowPrerelease -Force  -Scope CurrentUser
+Install-Module PSReadLine -Force  -Scope CurrentUser
 
 # 3/5 gitのインストール
 winget install Git.Git   # 入ってなかったら
