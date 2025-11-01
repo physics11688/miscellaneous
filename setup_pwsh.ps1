@@ -1,8 +1,8 @@
 # 1/5 PowerShellGetはまあ, wingetみたいなやつのPowerShell機能限定版だと思えばいい
-Install-Module -Name PowerShellGet -Force # 多分もう入ってる
+Install-Module -Name PowerShellGet -Force -Scope CurrentUser # 多分もう入ってる
 
 # 2/5 コマンドとかを補完しまくりになる
-Install-Module PSReadLine -AllowPrerelease -Force
+Install-Module PSReadLine -AllowPrerelease -Force  -Scope CurrentUser
 
 # 3/5 gitのインストール
 winget install Git.Git   # 入ってなかったら
