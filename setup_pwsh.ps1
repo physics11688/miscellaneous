@@ -54,4 +54,6 @@ if (-not (Select-String -Path $profile -Pattern '\.remodeling_pwsh\.ps1' -Quiet)
 
 
 # 設定の反映 (ターミナルを再起動してもいいけど)
-. $profile
+# . $profile
+
+Write-Output "初期設定が完了しました"
