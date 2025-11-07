@@ -2,6 +2,16 @@
 
 pip3 install pyserial --break-system-packages  # pyserialのインストール
 
+touch "${HOME}/.zshrc"
+if ! command -v brew >/dev/null 2>&1; then
+  echo "❌ Homebrew がインストールされていません。スクリプトを終了します。"
+  exit 1
+fi
+# brewのチェック
+if ! grep -q 'export PATH="/opt/homebrew/bin:$PATH"' ~/.zshrc; then
+    echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
+    export PATH="/opt/homebrew/bin:$PATH"  # 今のセッションにも反映
+fi
 brew install grep trash micro git  # 色々インストール
 brew install --cask core-tunnel
 
@@ -29,7 +39,7 @@ fi
 
 chmod +x "$HOME/.remodeling_zsh.sh"
 
-touch "${HOME}/.zshrc"
+
 # .zshrcに .remodeling_zsh.sh を読み込む設定を追記
 if ! grep -q "source \$HOME/.remodeling_zsh.sh" ~/.zshrc; then
     echo 'source $HOME/.remodeling_zsh.sh' >> ~/.zshrc
