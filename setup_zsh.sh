@@ -11,8 +11,9 @@ TARGET="${HOME}/.remodeling_zsh.sh"
 URL="https://raw.githubusercontent.com/physics11688/miscellaneous/main/remodeling_zsh.sh"
 
 if [ -f "$TARGET" ]; then
-    read -p "$TARGET はすでに存在します。上書きしますか？ (y/n): " yn
-    case "$yn" in
+    echo -n "$TARGET はすでに存在します。上書きしますか？ (y/n): " yn
+    read input
+    case "$input" in
         [Yy]* )
             curl -o "$TARGET" "$URL"
             echo "ファイルを上書きしました。"
@@ -25,6 +26,8 @@ else
     curl -o "$TARGET" "$URL"
     echo "ファイルをダウンロードしました。"
 fi
+
+chmod +x "$HOME/.remodeling_zsh.sh"
 
 touch "${HOME}/.zshrc"
 # .zshrcに .remodeling_zsh.sh を読み込む設定を追記
