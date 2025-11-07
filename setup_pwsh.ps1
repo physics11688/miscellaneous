@@ -31,12 +31,12 @@ $remodelingUrl = "https://raw.githubusercontent.com/physics11688/miscellaneous/m
 if (Test-Path $remodelingPath) {
     $overwrite = Read-Host "$remodelingPath がすでに存在します。上書きしますか？ (y/n)"
     if ($overwrite -notin @("y", "Y", "yes", "Yes")) {
-        Write-Host "既存のファイルを保持しました。"
+        Write-Host "既存の .remodeling_pwsh.ps1 を保持しました。"
     }
     else {
         try {
             Invoke-WebRequest -Uri $remodelingUrl -OutFile $remodelingPath -UseBasicParsing
-            Write-Host "PowerShellの設定ファイルを上書きしました。"
+            Write-Host ".remodeling_pwsh.ps1 を上書きしました。"
         }
         catch {
             Write-Warning "設定ファイルのダウンロードに失敗しました: $_"
