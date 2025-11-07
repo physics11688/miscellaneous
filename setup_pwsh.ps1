@@ -28,11 +28,29 @@ if (-not (py -m pip show pyserial)) {
 $remodelingPath = Join-Path $env:USERPROFILE ".remodeling_pwsh.ps1"
 $remodelingUrl = "https://raw.githubusercontent.com/physics11688/miscellaneous/main/remodeling_pwsh.ps1"
 
-try {
-    Invoke-WebRequest -Uri $remodelingUrl -OutFile $remodelingPath -UseBasicParsing
+if (Test-Path $remodelingPath) {
+    $overwrite = Read-Host "$remodelingPath がすでに存在します。上書きしますか？ (y/n)"
+    if ($overwrite -notin @("y", "Y", "yes", "Yes")) {
+        Write-Host "既存のファイルを保持しました。"
+    }
+    else {
+        try {
+            Invoke-WebRequest -Uri $remodelingUrl -OutFile $remodelingPath -UseBasicParsing
+            Write-Host "PowerShellの設定ファイルを上書きしました。"
+        }
+        catch {
+            Write-Warning "設定ファイルのダウンロードに失敗しました: $_"
+        }
+    }
 }
-catch {
-    Write-Warning "設定ファイルのダウンロードに失敗しました: $_"
+else {
+    try {
+        Invoke-WebRequest -Uri $remodelingUrl -OutFile $remodelingPath -UseBasicParsing
+        Write-Host "PowerShellの設定ファイルを保存しました。"
+    }
+    catch {
+        Write-Warning "PowerShellの設定ファイルのダウンロードに失敗しました: $_"
+    }
 }
 
 # $profile に安全な読み込みコードを追加
