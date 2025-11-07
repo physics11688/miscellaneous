@@ -29,7 +29,26 @@ echo 上記が RemoteSigned なら成功です。
 echo ============================================
 
 echo Windows Terminalの設定を行います。
-curl -s https://raw.githubusercontent.com/physics11688/miscellaneous/main/setup_WinTerminal.py | python
+
+setlocal
+
+:: GitHub の raw URL を指定
+set "PY_URL=https://raw.githubusercontent.com/physics11688/miscellaneous/main/setup_WinTerminal.py"
+
+:: 一時ファイル名を指定
+set "TEMP_PY=%TEMP%\temp_script.py"
+
+:: スクリプトをダウンロード
+curl -s %PY_URL% -o "%TEMP_PY%"
+
+:: Python スクリプトを実行
+python "%TEMP_PY%"
+
+:: 一時ファイルを削除
+del "%TEMP_PY%"
+
+endlocal
+
 
 echo PowerShell スクリプトをダウンロードして実行します...
 pwsh -Command "iex (Invoke-WebRequest -UseBasicParsing 'https://raw.githubusercontent.com/physics11688/miscellaneous/main/setup_pwsh.ps1').Content"
