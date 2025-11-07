@@ -3,7 +3,7 @@
 pip3 install pyserial --break-system-packages  # pyserialのインストール
 
 touch "${HOME}/.zshrc"
-if ! command -v brew >/dev/null 2>&1; then
+if ! command -v /opt/homebrew/bin/brew >/dev/null 2>&1; then
   echo "❌ Homebrew がインストールされていません。スクリプトを終了します。"
   exit 1
 fi
