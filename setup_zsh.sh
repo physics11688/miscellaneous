@@ -3,11 +3,12 @@
 pip3 install pyserial --break-system-packages  # pyserialのインストール
 
 touch "${HOME}/.zshrc"
+# brewのチェック
 if ! command -v /opt/homebrew/bin/brew >/dev/null 2>&1; then
   echo "❌ Homebrew がインストールされていません。スクリプトを終了します。"
   exit 1
 fi
-# brewのチェック
+
 if ! grep -q 'export PATH="/opt/homebrew/bin:$PATH"' ~/.zshrc; then
     echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
     export PATH="/opt/homebrew/bin:$PATH"  # 今のセッションにも反映
