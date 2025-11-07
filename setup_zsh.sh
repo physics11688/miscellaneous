@@ -2,8 +2,8 @@
 
 pip3 install pyserial --break-system-packages  # pyserialのインストール
 
-brew install coreutils grep trash micro git  # 色々インストール
-
+brew install grep trash micro git  # 色々インストール
+brew install --cask core-tunnel
 
 # zshの設定ファイルとかのダウンロード
 # ホームディレクトリの .remodeling_zsh.sh として保存
