@@ -11,7 +11,7 @@ TARGET="${HOME}/.remodeling_zsh.sh"
 URL="https://raw.githubusercontent.com/physics11688/miscellaneous/main/remodeling_zsh.sh"
 
 if [ -f "$TARGET" ]; then
-    echo -n "$TARGET はすでに存在します。上書きしますか？ (y/n): " yn
+    echo -n "$TARGET はすでに存在します。上書きしますか？ (y or n): "
     read input
     case "$input" in
         [Yy]* )
