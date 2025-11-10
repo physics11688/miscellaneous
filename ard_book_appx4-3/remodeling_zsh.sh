@@ -1,3 +1,28 @@
+# ArduinoBook WSL or MacOSのmultipass用
+
+### Added by Zinit's installer
+if [[ ! -f $HOME/.local/share/zinit/zinit.git/zinit.zsh ]]; then
+    print -P "%F{33} %F{220}Installing %F{33}ZDHARMA-CONTINUUM%F{220} Initiative Plugin Manager (%F{33}zdharma-continuum/zinit%F{220})…%f"
+    command mkdir -p "$HOME/.local/share/zinit" && command chmod g-rwX "$HOME/.local/share/zinit"
+    command git clone https://github.com/zdharma-continuum/zinit "$HOME/.local/share/zinit/zinit.git" && \
+        print -P "%F{33} %F{34}Installation successful.%f%b" || \
+        print -P "%F{160} The clone has failed.%f%b"
+fi
+
+source "$HOME/.local/share/zinit/zinit.git/zinit.zsh"
+autoload -Uz _zinit
+(( ${+_comps} )) && _comps[zinit]=_zinit
+
+# Load a few important annexes, without Turbo
+# (this is currently required for annexes)
+zinit light-mode for \
+    zdharma-continuum/zinit-annex-as-monitor \
+    zdharma-continuum/zinit-annex-bin-gem-node \
+    zdharma-continuum/zinit-annex-patch-dl \
+    zdharma-continuum/zinit-annex-rust
+
+### End of Zinit's installer chunk
+
 # Set up the prompt
 autoload -Uz promptinit
 promptinit
@@ -145,9 +170,20 @@ preexec() {
 }
 
 
-PROMPT='
-[%B%F{cyan}%n%f%b@WSL:%F{yellow}%~%f]
-%B%F{red}$%f%b '
+VIRT_TYPE=$(systemd-detect-virt)
+
+if [ "$VIRT_TYPE" = "qemu" ]; then
+    SYSTEM="Ubuntu"
+elif [ "$VIRT_TYPE" = "wsl" ]; then
+    SYSTEM="WSL"
+else
+    SYSTEM="UNKNOWN"
+fi
+
+
+PROMPT="
+[%B%F{cyan}%n%f%b@${SYSTEM}:%F{yellow}%~%f]
+%B%F{red}$%f%b "
 
 #RPROMPT=$RPROMPT'${vcs_info_msg_0_}'
 
@@ -168,10 +204,13 @@ function ranger-cd {
     rm -f -- "$tempfile"
 }
 
-function printpath {
-    python3 -c "import os;print(os.getenv('PATH').replace(':','\n'))"
+showp () {
+    python3 -c "import serial.tools.list_ports;[print(p) for p in reversed(list(serial.tools.list_ports.comports()))]"
 }
 
+printpath() {
+    python3 -c "import os;print(os.getenv('PATH').replace(':','\n'))"
+}
 # alias
 alias ls='ls -FG --color=auto'
 alias ll='ls -alFG --color=auto'
@@ -179,18 +218,67 @@ alias grep='grep --color=auto'
 alias fgrep='fgrep --color=auto'
 alias egrep='egrep --color=auto'
 alias bk="cd -"
-alias rm="trash-put"
 alias update="sudo apt update && sudo apt -y upgrade"
-alias updatezinit="zinit self-update --all && zinit update"
-alias m="micro"
-alias r="ranger-cd"
-alias ports='netstat -tulanp'
-
-export PATH=$PATH:/snap/bin
+command -v trash-put >/dev/null && alias rm="trash-put"
+command -v micro >/dev/null && alias m="micro"
 
 export LANG=ja_JP.UTF-8
 
-bindkey ";5C" forward-word
-bindkey ";5D" backward-word
-bindkey ";5A" backward-kill-word
-bindkey ";5B" yank
+# OS判定してキーバインドを切り替え
+if [[ "$(uname)" == "Darwin" ]]; then
+    # --- macOS 用 (Optionキーで操作) ---
+
+    # 単語単位の移動
+    bindkey "^[[1;3D" backward-word   # Option + ←
+    bindkey "^[[1;3C" forward-word    # Option + →
+
+    # 単語単位削除 (Option + Backspace)
+    bindkey "^[^?" backward-kill-word
+
+    # 単語単位削除・貼り付け (Option + ↑  Optionl + ↓)
+    bindkey "^[[1;3A" backward-kill-word
+    bindkey "^[[1;3B" yank
+
+    # 文字単位削除 (Backspace)
+    bindkey "^?" backward-delete-char
+
+    # 行頭 / 行末 (Option + A / Option + E)
+    bindkey "^[a" beginning-of-line
+    bindkey "^[e" end-of-line
+
+    # 行削除 (Option + K / Option + U)
+    bindkey "^[k" kill-line           # カーソルから行末まで削除
+    bindkey "^[u" backward-kill-line  # カーソルから行頭まで削除
+
+    # 単語削除 (Option + D / Option + Delete)
+    bindkey "^[d" kill-word
+
+    # 貼り付け (Option + Y)
+    bindkey "^[y" yank
+
+else
+    # --- Linux 用 (Ctrlキーで操作) ---
+
+    # Ctrl + ← / → : 単語単位移動
+    bindkey "^[[1;5D" backward-word
+    bindkey "^[[1;5C" forward-word
+    bindkey "^[[5D"   backward-word  # 一部の端末対策
+    bindkey "^[[5C"   forward-word
+
+    # 単語単位削除 (Ctrl + Backspace / Ctrl + Delete)
+    bindkey "^H" backward-kill-word
+    bindkey "^[3;5~" kill-word
+    # 単語単位削除・貼り付け (Ctrl + ↑  Ctrl + ↓)
+    bindkey "^[[1;5A" backward-kill-word
+    bindkey "^[[1;5B" yank
+    # 行頭 / 行末
+    bindkey "^A" beginning-of-line
+    bindkey "^E" end-of-line
+
+    # 行削除
+    bindkey "^K" kill-line
+    bindkey "^U" backward-kill-line
+
+    # 貼り付け
+    bindkey "^Y" yank
+fi
