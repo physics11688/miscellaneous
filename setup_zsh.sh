@@ -1,5 +1,6 @@
 #!/bin/zsh
 
+# For MacOS
 pip3 install pyserial --break-system-packages  # pyserialのインストール
 
 touch "${HOME}/.zshrc"
