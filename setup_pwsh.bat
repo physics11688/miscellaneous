@@ -22,8 +22,6 @@ if %errorlevel% neq 0 (
     echo PowerShell 7 をインストール中です...
     winget install --id Microsoft.PowerShell --source winget --accept-package-agreements --accept-source-agreements
 
-    echo インストールが完了したら Enter キーを押してください。
-    pause
 )
 
 set "PATH=%PATH%;C:\Program Files\PowerShell\7"

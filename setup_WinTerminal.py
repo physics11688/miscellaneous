@@ -34,6 +34,7 @@ with open(settings_path, "r", encoding="utf-8") as f:
 # PowerShell 7 のプロファイルを探す
 pwsh_profile = None
 for profile in data.get("profiles", {}).get("list", []):
+    print(profile.get("source", ""))
     if "Windows.Terminal.PowershellCore" in profile.get("source", ""):
         pwsh_profile = profile
         break
