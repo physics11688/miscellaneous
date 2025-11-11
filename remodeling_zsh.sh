@@ -110,19 +110,32 @@ man() {
 
 
 # alias
-alias ls='gls -FG --color=auto'     # brew install coreutils grep
-alias ll='gls -alFG --color=auto'
-alias grep='ggrep --color=auto'
-alias fgrep='gfgrep --color=auto'
-alias egrep='gegrep --color=auto'
+
+if [ "$(uname -s)" = "Darwin" ]; then
+    alias ls='gls -FG --color=auto'     # brew install coreutils grep
+    alias ll='gls -alFG --color=auto'
+    alias grep='ggrep --color=auto'
+    alias fgrep='gfgrep --color=auto'
+    alias egrep='gegrep --color=auto'
+    alias update="brew update && brew upgrade && brew upgrade --cask"
+    alias macupdate="softwareupdate --install --all"
+    command -v trash >/dev/null && alias rm="trash"
+    command -v netstat >/dev/null && alias ports='netstat -tulanp'
+else
+    alias ls='ls -FG --color=auto'
+    alias ll='ls -alFG --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+    alias update='sudo apt update && sudo apt -y upgrade'
+    alias ports='ss -tulwn'
+    command -v trash-put >/dev/null && alias rm="trash-put"
+fi
+command -v micro >/dev/null && alias m="micro"
 alias bk="cd -"
-alias update="brew update && brew upgrade && brew upgrade --cask"
-alias macupdate="softwareupdate --install --all"
 alias updatezinit="zinit self-update --all && zinit update"
 alias pipupdate="pip3 list -o | tail -n +3 | awk '{ print \$1 }' | xargs pip3 install -U"
-command -v trash >/dev/null && alias rm="trash"
-command -v micro >/dev/null && alias m="micro"
-alias ports='netstat -tulanp'
+
 
 
 
