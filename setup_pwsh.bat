@@ -21,6 +21,7 @@ if %errorlevel% neq 0 (
 
     echo PowerShell 7 をインストール中です...
     winget install --id Microsoft.PowerShell --source winget --accept-package-agreements --accept-source-agreements
+    start "" wt powershell -Command "exit"
 
 )
 
