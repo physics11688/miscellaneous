@@ -16,6 +16,8 @@ elif [ "$os_name" = "Linux" ]; then
         os_name="WSL"
     elif [ -n "$MULTIPASS_INSTANCE_NAME" ]; then
         os_name="Multipass"
+    elif [ -f /run/cloud-init/cloud-id ] && grep -q "multipass" /run/cloud-init/cloud-id; then
+        os_name="Multipass"
     elif [[ "$arch" == arm* ]] && grep -q "Raspberry Pi" /proc/cpuinfo; then
         os_name="RaspberryPi"
     else
@@ -26,6 +28,8 @@ elif [ "$os_name" = "Linux" ]; then
         fi
     fi
 fi
+
+echo "OS: $os_name"
 
 touch "${HOME}/.zshrc"
 
