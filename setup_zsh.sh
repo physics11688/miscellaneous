@@ -118,11 +118,15 @@ fi
 bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
 
 
+# execで変数消える
+if [ "$os_name" = "Mac" ]; then
+    export os_name="Mac"
+fi
 
 # 設定の反映 (ターミナル再起動してもいいけど)
 exec zsh
 
-echo "$os_name"
+
 if [ "$os_name" = "Mac" ]; then
     if [ ! -d "${HOME}/macos-terminal-themes" ]; then
         git clone https://github.com/lysyi3m/macos-terminal-themes "${HOME}/macos-terminal-themes"
