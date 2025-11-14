@@ -84,33 +84,27 @@ fi
 # ホームディレクトリの .remodeling_zsh.sh として保存
 TARGET="${HOME}/.remodeling_zsh.sh"
 URL="https://raw.githubusercontent.com/physics11688/miscellaneous/main/remodeling_zsh.sh"
+download_flag=false
 
 if [ -f "$TARGET" ]; then
     echo -n "$TARGET はすでに存在します。上書きしますか？ (y or n): "
     read input
     case "$input" in
-        [Yy]* )
-            curl -o "$TARGET" "$URL"
-
-            if [[ "$os_name" == "Mac" ]]; then
-                sed -i '' "s/b@Mac/b@${os_name}/g" "$TARGET"
-            else
-                sed -i "s/b@Mac/b@${os_name}/g" "$TARGET"
-            fi
-            echo "ファイルを上書きしました。"
-            ;;
-        * )
-            echo "既存のファイルを保持しました。"
-            ;;
+        [Yy]* ) download_flag=true ;;
+        * ) echo "既存のファイルを保持しました。" ;;
     esac
 else
+    download_flag=true
+fi
+
+if $download_flag; then
     curl -o "$TARGET" "$URL"
-        if [[ "$os_name" == "Mac" ]]; then
-            sed -i '' "s/b@Mac/b@${os_name}/g" "$TARGET"
-        else
-            sed -i "s/b@Mac/b@${os_name}/g" "$TARGET"
-        fi
-    echo "ファイルをダウンロードしました。"
+    if [[ "$os_name" == "Mac" ]]; then
+        sed -i '' "s/b@Mac/b@${os_name}/g" "$TARGET"
+    else
+        sed -i "s/b@Mac/b@${os_name}/g" "$TARGET"
+    fi
+    echo "設定ファイルを新規にダウンロードしました。"
 fi
 
 chmod +x "$HOME/.remodeling_zsh.sh"
