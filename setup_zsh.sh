@@ -122,6 +122,7 @@ bash -c "$(curl --fail --show-error --silent --location https://raw.githubuserco
 # 設定の反映 (ターミナル再起動してもいいけど)
 exec zsh
 
+echo "$os_name"
 if [ "$os_name" = "Mac" ]; then
     if [ ! -d "${HOME}/macos-terminal-themes" ]; then
         git clone https://github.com/lysyi3m/macos-terminal-themes "${HOME}/macos-terminal-themes"
