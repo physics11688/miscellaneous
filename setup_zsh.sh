@@ -43,9 +43,9 @@ if [ "$os_name" = "Mac" ]; then
     exit 1
     fi
 
-    if ! grep -q 'export PATH="/opt/homebrew/bin:$PATH"' ~/.zshrc; then
-        echo 'export PATH="/opt/homebrew/bin:$PATH"' >> ~/.zshrc
-        export PATH="/opt/homebrew/bin:$PATH"  # 今のセッションにも反映
+    if ! grep -q 'brew shellenv' ~/.zshrc; then
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+        eval "$(/opt/homebrew/bin/brew shellenv)"  # 今のセッションにも反映
     fi
     brew install grep trash micro git coreutils  # 色々インストール
 else
