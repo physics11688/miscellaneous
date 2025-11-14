@@ -118,13 +118,7 @@ fi
 bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
 
 
-# execで変数消える
-if [ "$os_name" = "Mac" ]; then
-    export os_name="Mac"
-fi
 
-# 設定の反映 (ターミナル再起動してもいいけど)
-exec zsh
 
 
 if [ "$os_name" = "Mac" ]; then
@@ -134,6 +128,10 @@ if [ "$os_name" = "Mac" ]; then
 
 
     open "$HOME/macos-terminal-themes/themes"
+    osascript -e 'display dialog "開いたディレクトリから テーマ を選択してください" buttons {"OK"} default button "OK"'
 
-    echo "開いたディレクトリから テーマ を選択してください"
+    # echo "開いたディレクトリから テーマ を選択してください"
 fi
+
+# 設定の反映 (ターミナル再起動してもいいけど)
+exec zsh
