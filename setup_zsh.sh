@@ -91,7 +91,12 @@ if [ -f "$TARGET" ]; then
     case "$input" in
         [Yy]* )
             curl -o "$TARGET" "$URL"
-            sed -i '' "s/b@Mac/b@${os_name}/g" "${HOME}/.remodeling_zsh.sh"
+
+            if [[ "$os_name" == "Mac" ]]; then
+                sed -i '' "s/b@Mac/b@${os_name}/g" "$TARGET"
+            else
+                sed -i "s/b@Mac/b@${os_name}/g" "$TARGET"
+            fi
             echo "ファイルを上書きしました。"
             ;;
         * )
@@ -100,7 +105,11 @@ if [ -f "$TARGET" ]; then
     esac
 else
     curl -o "$TARGET" "$URL"
-    sed -i '' "s/b@Mac/b@${os_name}/g" "${HOME}/.remodeling_zsh.sh"
+        if [[ "$os_name" == "Mac" ]]; then
+            sed -i '' "s/b@Mac/b@${os_name}/g" "$TARGET"
+        else
+            sed -i "s/b@Mac/b@${os_name}/g" "$TARGET"
+        fi
     echo "ファイルをダウンロードしました。"
 fi
 
