@@ -16,6 +16,7 @@ if %errorlevel% neq 0 (
         exit /b
         ) else (
         echo wingetが見つかりました。
+        winget install uutils.coreutils
     )
 
 
