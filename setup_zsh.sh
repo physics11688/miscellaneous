@@ -47,9 +47,15 @@ if [ "$os_name" = "Mac" ]; then
         echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
         eval "$(/opt/homebrew/bin/brew shellenv)"  # 今のセッションにも反映
     fi
+    brew update
+    brew upgrade
+    brew upgrade --cask
+    brew cleanup
     brew install grep trash micro git coreutils  # 色々インストール
 else
-    sudo apt update && sudo apt upgrade -y
+    sudo apt update
+    sudo apt upgrade -y
+    sudo apt autoremove -y
     sudo apt install -y \
         zsh git curl build-essential \
         python3 python3-pip \
