@@ -118,19 +118,28 @@ if [ "$(uname -s)" = "Darwin" ]; then
     alias grep='ggrep --color=auto'
     alias fgrep='gfgrep --color=auto'
     alias egrep='gegrep --color=auto'
-    alias update="brew update && brew upgrade && brew upgrade --cask"
     alias macupdate="softwareupdate --install --all"
     command -v trash >/dev/null && alias rm="trash"
     command -v netstat >/dev/null && alias ports='netstat -tulanp'
+    update() {
+         brew update
+         brew upgrade
+         brew upgrade --cask
+         brew cleanup
+    }
 else
     alias ls='ls -FG --color=auto'
     alias ll='ls -alFG --color=auto'
     alias grep='grep --color=auto'
     alias fgrep='fgrep --color=auto'
     alias egrep='egrep --color=auto'
-    alias update='sudo apt update && sudo apt -y upgrade'
     alias ports='ss -tulwn'
     command -v trash-put >/dev/null && alias rm="trash-put"
+    update() {
+         sudo apt update
+         sudo apt -y upgrade
+         sudo apt -y autoremove
+    }
 fi
 command -v micro >/dev/null && alias m="micro"
 alias bk="cd -"
