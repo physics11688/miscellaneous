@@ -21,11 +21,12 @@ if %errorlevel% neq 0 (
 
     echo PowerShell 7 をインストール中です...
     "C:\Users\%USERNAME%\AppData\Local\Microsoft\WindowsApps\winget.exe" install --id Microsoft.PowerShell --source winget --accept-package-agreements --accept-source-agreements
-    "C:\Users\%USERNAME%\AppData\Local\Microsoft\WindowsApps\winget.exe" install uutils.coreutils
+
     start "" wt powershell -Command "exit"
 
 )
 
+"C:\Users\%USERNAME%\AppData\Local\Microsoft\WindowsApps\winget.exe" install uutils.coreutils  --source winget --accept-package-agreements --accept-source-agreements
 echo PowerShell 7 が見つかりました。実行ポリシーを RemoteSigned に設定します...
 "C:\Program Files\PowerShell\7\pwsh.exe" -Command "Set-ExecutionPolicy RemoteSigned -Scope CurrentUser -Force"
 echo 設定が完了しました。現在のポリシーを確認します...
