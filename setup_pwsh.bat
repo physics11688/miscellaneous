@@ -1,4 +1,5 @@
 @echo off
+:: 必ずCRLFでアップロード！！！
 chcp 65001 >nul
 
 echo PowerShell 7 (pwsh) の存在を確認しています...
@@ -38,6 +39,13 @@ echo ============================================
 echo Windows Terminalの設定を行います。
 
 setlocal
+
+where.exe py >nul 2>nul
+if %errorlevel% neq 0 (
+    echo pyコマンド が見つかりません。手動でインストールしてください。
+    pause
+    exit /b
+)
 
 :: GitHub の raw URL を指定
 set "PY_URL=https://raw.githubusercontent.com/physics11688/miscellaneous/main/setup_WinTerminal.py"

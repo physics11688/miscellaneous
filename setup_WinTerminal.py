@@ -33,7 +33,7 @@ with open(settings_path, "r", encoding="utf-8") as f:
 
 # PowerShell 7 のプロファイルを探す
 pwsh_profile = None
-print("WIndows Terminal のプロファイル\n-------------------")
+print("Windows Terminal のプロファイル\n-------------------")
 for profile in data.get("profiles", {}).get("list", []):
     print(profile.get("source", ""))
     if "Windows.Terminal.PowershellCore" in profile.get("source", ""):

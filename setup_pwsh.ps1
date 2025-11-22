@@ -19,10 +19,20 @@ if (-not (Get-Module -ListAvailable -Name posh-git)) {
     PowerShellGet\Install-Module posh-git -Force -Scope CurrentUser
 }
 
+$py = 'C:\Program Files\PyManager\py.exe'
+
+& $py -m pip show pyserial *> $null
+
 # 5/5 pyserial のインストール
-if (-not (py -m pip show pyserial)) {
-    py -m pip install pyserial
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "pyserial が未インストールです。インストールします..."
+    & $py -m pip install pyserial
 }
+else {
+    Write-Host "pyserial は既にインストールされています。"
+}
+
+
 
 # PowerShell の設定ファイルをダウンロード
 $remodelingPath = Join-Path $env:USERPROFILE ".remodeling_pwsh.ps1"
