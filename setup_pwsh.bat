@@ -40,8 +40,8 @@ echo Windows Terminalの設定を行います。
 
 setlocal
 
-where.exe py >nul 2>nul
-if %errorlevel% neq 0 (
+set "PY_EXE=C:\Program Files\PyManager\py.exe"
+if not exist "%PY_EXE%" (
     echo pyコマンド が見つかりません。手動でインストールしてください。
     pause
     exit /b
@@ -57,7 +57,7 @@ set "TEMP_PY=%TEMP%\temp_script.py"
 curl -s %PY_URL% -o "%TEMP_PY%"
 
 :: Python スクリプトを実行
-py "%TEMP_PY%"
+"%PY_EXE%" "%TEMP_PY%"
 
 :: 一時ファイルを削除
 del "%TEMP_PY%"
