@@ -25,11 +25,11 @@ $py = 'C:\Program Files\PyManager\py.exe'
 
 # 5/5 pyserial のインストール
 if ($LASTEXITCODE -ne 0) {
-    Write-Host "pyserial が未インストールです。インストールします..."
+    Write-Host "[INFO] pyserial が未インストールです。インストールします..."
     & $py -m pip install pyserial
 }
 else {
-    Write-Host "pyserial は既にインストールされています。"
+    Write-Host "[INFO] pyserial は既にインストールされています。"
 }
 
 
@@ -41,25 +41,25 @@ $remodelingUrl = "https://raw.githubusercontent.com/physics11688/miscellaneous/m
 if (Test-Path $remodelingPath) {
     $overwrite = Read-Host "$remodelingPath がすでに存在します。上書きしますか？ (y/n)"
     if ($overwrite -notin @("y", "Y", "yes", "Yes")) {
-        Write-Host "既存の .remodeling_pwsh.ps1 を保持しました。"
+        Write-Host "[INFO] 既存の .remodeling_pwsh.ps1 を保持しました。"
     }
     else {
         try {
             Invoke-WebRequest -Uri $remodelingUrl -OutFile $remodelingPath -UseBasicParsing
-            Write-Host ".remodeling_pwsh.ps1 を上書きしました。"
+            Write-Host "[INFO] .remodeling_pwsh.ps1 を上書きしました。"
         }
         catch {
-            Write-Warning "設定ファイルのダウンロードに失敗しました: $_"
+            Write-Warning "[ERROR] 設定ファイルのダウンロードに失敗しました: $_"
         }
     }
 }
 else {
     try {
         Invoke-WebRequest -Uri $remodelingUrl -OutFile $remodelingPath -UseBasicParsing
-        Write-Host "PowerShellの設定ファイルを保存しました。"
+        Write-Host "[INFO] PowerShellの設定ファイルを保存しました。"
     }
     catch {
-        Write-Warning "PowerShellの設定ファイルのダウンロードに失敗しました: $_"
+        Write-Warning "[ERROR] PowerShellの設定ファイルのダウンロードに失敗しました: $_"
     }
 }
 
@@ -84,4 +84,4 @@ if (-not (Select-String -Path $profile -Pattern '\.remodeling_pwsh\.ps1' -Quiet)
 # 設定の反映 (ターミナルを再起動してもいいけど)
 # . $profile
 
-Write-Output "初期設定が完了しました"
+Write-Output "[INFO] 初期設定が完了しました"

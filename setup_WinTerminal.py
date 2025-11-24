@@ -14,7 +14,7 @@ matching_dirs = glob.glob(search_pattern)
 
 # 結果表示
 if not matching_dirs:
-    print("Windows Terminal の設定ディレクトリが見つかりません.")
+    print("[ERROR] Windows Terminal の設定ディレクトリが見つかりません.")
     exit(1)
 
 
@@ -24,7 +24,7 @@ settings_path = os.path.join(matching_dirs[0], "LocalState", "settings.json")
 
 # ファイルが存在するか確認
 if not os.path.exists(settings_path):
-    print("Windows Terminal の設定ファイルが見つかりません.")
+    print("[ERROR] Windows Terminal の設定ファイルが見つかりません.")
     exit(1)
 
 # JSON 読み込み
@@ -33,7 +33,7 @@ with open(settings_path, "r", encoding="utf-8") as f:
 
 # PowerShell 7 のプロファイルを探す
 pwsh_profile = None
-print("Windows Terminal のプロファイル\n-------------------")
+print("[INFO] Windows Terminal のプロファイル\n-------------------")
 for profile in data.get("profiles", {}).get("list", []):
     print(profile.get("source", ""))
     if "Windows.Terminal.PowershellCore" in profile.get("source", ""):
@@ -42,13 +42,13 @@ for profile in data.get("profiles", {}).get("list", []):
 print("-------------------\n")
 
 if not pwsh_profile:
-    print("PowerShell 7 のプロファイルが見つかりません.")
+    print("[ERROR] PowerShell 7 のプロファイルが見つかりません.")
     exit(1)
 
 
 # 既定プロファイルに設定
 if data["defaultProfile"] != pwsh_profile["guid"]:
-    print("Windows Terminalの既定プロファイルが PowerShell 7 ではありません.")
+    print("[INFO] Windows Terminalの既定プロファイルが PowerShell 7 ではありません.")
 
     while True:
         answer = (
@@ -73,4 +73,4 @@ data["defaultProfile"] = pwsh_profile["guid"]
 with open(settings_path, "w", encoding="utf-8") as f:
     json.dump(data, f, indent=4)
 
-print("Windows Terminal の設定を完了しました.")
+print("[INFO] Windows Terminal の設定を完了しました.")
