@@ -36,6 +36,7 @@ touch "${HOME}/.zshrc"
 
 # For MacOS
 if [ "$os_name" = "Mac" ]; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> $HOME/.zshrc
     pip3 install pyserial --user  # pyserialのインストール
     # brewのチェック
     if ! command -v /opt/homebrew/bin/brew >/dev/null 2>&1; then
