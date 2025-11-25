@@ -29,7 +29,7 @@ elif [ "$os_name" = "Linux" ]; then
     fi
 fi
 
-echo "OS: $os_name"
+echo "[INFO] YOUR OS: $os_name"
 
 touch "${HOME}/.zshrc"
 
@@ -37,27 +37,33 @@ touch "${HOME}/.zshrc"
 # For MacOS
 if [ "$os_name" = "Mac" ]; then
     # pip3の設定
+
     if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "${HOME}/.zshrc"; then
+        echo "[INFO] ホームディレクトリの .zshrc に Python3ライブラリのパス を追加します。"
         echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.zshrc"
     fi
 
+    echo "[INFO] Pythonライブラリ pyserial をインストールします。"
     pip3 install pyserial --user  # pyserialのインストール
     # brewのチェック
     if ! command -v /opt/homebrew/bin/brew >/dev/null 2>&1; then
-    echo "❌ Homebrew がインストールされていません。スクリプトを終了します。"
+    echo "[ERROR] Homebrew がインストールされていません。スクリプトを終了します。"
     exit 1
     fi
 
     if ! grep -q 'brew shellenv' "${HOME}/.zshrc"; then
+        echo "[INFO] ホームディレクトリの .zshrc に Homebrewのパス を追加します。"
         echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "${HOME}/.zshrc"
         eval "$(/opt/homebrew/bin/brew shellenv)"  # 今のセッションにも反映
     fi
+    echo "[INFO] brewでgrep trash micro git coreutilsをインストールします。"
     brew update
     brew upgrade
     brew upgrade --cask
     brew cleanup
     brew install grep trash micro git coreutils  # 色々インストール
 else
+    echo "[INFO] aptで開発環境をインストールします。"
     sudo apt update
     sudo apt upgrade -y
     sudo apt autoremove -y
@@ -77,14 +83,18 @@ else
     fonts-ipafont \
     fonts-ipaexfont \
 
+    echo "ロケールの変更を行います。"
     sudo update-locale LANG=ja_JP.UTF8
     fi
+
+    echo "システムの言語等を設定します"
 
     sudo sed -i 's/^# *ja_JP.UTF-8 UTF-8/ja_JP.UTF-8 UTF-8/' /etc/locale.gen
     sudo locale-gen || true
     sudo update-locale LANG=ja_JP.UTF-8 || true
     sudo timedatectl set-timezone Asia/Tokyo || true
     # zsh使用
+    echo "[INFO] ログインシェルを zsh に変更します。"
     sudo usermod -s "$(which zsh)" $(whoami)
 
 fi
@@ -98,11 +108,11 @@ URL="https://raw.githubusercontent.com/physics11688/miscellaneous/main/remodelin
 download_flag=false
 
 if [ -f "$TARGET" ]; then
-    echo -n "$TARGET はすでに存在します。上書きしますか？ (y or n): "
+    echo -n "[NOTICE] $TARGET はすでに存在します。上書きしますか？ (y or n): "
     read input
     case "$input" in
         [Yy]* ) download_flag=true ;;
-        * ) echo "既存のファイルを保持しました。" ;;
+        * ) echo "[INFO] 既存のファイルを保持しました。" ;;
     esac
 else
     download_flag=true
@@ -115,7 +125,7 @@ if $download_flag; then
     else
         sed -i "s/b@Mac/b@${os_name}/g" "$TARGET"
     fi
-    echo "設定ファイルを新規にダウンロードしました。"
+    echo "[INFO] 設定ファイルを新規にダウンロードしました。"
 fi
 
 chmod +x "$HOME/.remodeling_zsh.sh"
@@ -123,12 +133,14 @@ chmod +x "$HOME/.remodeling_zsh.sh"
 
 # .zshrcに .remodeling_zsh.sh を読み込む設定を追記
 if ! grep -q 'source $HOME/.remodeling_zsh.sh' ~/.zshrc; then
+    echo "[INFO] ホームディレクトリの .zshrc に .remodeling_zsh.sh を読み込む設定を追記します"
     echo "source \$HOME/.remodeling_zsh.sh" >> ~/.zshrc
 fi
 
 
 
 # zinitのインストール
+echo "[INFO] zinit をインストールします。"
 bash -c "$(curl --fail --show-error --silent --location https://raw.githubusercontent.com/zdharma-continuum/zinit/HEAD/scripts/install.sh)"
 
 
@@ -136,6 +148,7 @@ bash -c "$(curl --fail --show-error --silent --location https://raw.githubuserco
 
 
 if [ "$os_name" = "Mac" ]; then
+    echo "[INFO] ターミナルのテーマを変更出来る様に設定します。"
     if [ ! -d "${HOME}/macos-terminal-themes" ]; then
         git clone https://github.com/lysyi3m/macos-terminal-themes "${HOME}/macos-terminal-themes"
     fi
