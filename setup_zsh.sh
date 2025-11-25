@@ -36,7 +36,7 @@ touch "${HOME}/.zshrc"
 
 # For MacOS
 if [ "$os_name" = "Mac" ]; then
-    pip3 install pyserial --break-system-packages  # pyserialのインストール
+    pip3 install pyserial --user  # pyserialのインストール
     # brewのチェック
     if ! command -v /opt/homebrew/bin/brew >/dev/null 2>&1; then
     echo "❌ Homebrew がインストールされていません。スクリプトを終了します。"
