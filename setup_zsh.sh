@@ -36,7 +36,11 @@ touch "${HOME}/.zshrc"
 
 # For MacOS
 if [ "$os_name" = "Mac" ]; then
-    echo 'export PATH="$HOME/.local/bin:$PATH"' >> $HOME/.zshrc
+    # pip3の設定
+    if ! grep -q 'export PATH="$HOME/.local/bin:$PATH"' "${HOME}/.zshrc"; then
+        echo 'export PATH="$HOME/.local/bin:$PATH"' >> "${HOME}/.zshrc"
+    fi
+
     pip3 install pyserial --user  # pyserialのインストール
     # brewのチェック
     if ! command -v /opt/homebrew/bin/brew >/dev/null 2>&1; then
@@ -44,8 +48,8 @@ if [ "$os_name" = "Mac" ]; then
     exit 1
     fi
 
-    if ! grep -q 'brew shellenv' ~/.zshrc; then
-        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zshrc
+    if ! grep -q 'brew shellenv' "${HOME}/.zshrc"; then
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> "${HOME}/.zshrc"
         eval "$(/opt/homebrew/bin/brew shellenv)"  # 今のセッションにも反映
     fi
     brew update
