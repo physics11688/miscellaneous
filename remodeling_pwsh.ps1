@@ -109,37 +109,75 @@ function Add-ToUserPath {
 # git status表示のため
 Import-Module posh-git
 
-# oh-my6-posh好みじゃない
-# Import-Module oh-my-posh
-#Set-Theme Paradox
-
-
-
 # プロンプトの変更
-# 色とかを変更したいときは -> https://qiita.com/Kosen-amai/items/134987a9edc6fe3f547c
-function prompt () {
+
+function Get-PrettyPath {
+    try { $path = (Get-Location).Path } catch { return (Get-Location).ToString() }
+    $homePath = $ExecutionContext.SessionState.PSVariable.GetValue('HOME')
+    if ([string]::IsNullOrWhiteSpace($homePath)) { $homePath = [Environment]::GetFolderPath('UserProfile') }
+    if ($path.StartsWith($homePath, [System.StringComparison]::OrdinalIgnoreCase)) {
+        $rest = $path.Substring($homePath.Length)
+        if ([string]::IsNullOrEmpty($rest)) { return "~" }
+        if ($rest[0] -in '\', '/') { $rest = $rest.Substring(1) }
+        return "~\" + $rest
+    }
+    return $path
+}
+
+function Get-ShortHostname {
+    $hostRaw = $env:HOSTNAME
+    if (-not $hostRaw) { $hostRaw = $env:COMPUTERNAME }
+    if (-not $hostRaw) { $hostRaw = [System.Net.Dns]::GetHostName() }
+    if (-not $hostRaw) { return "" }
+    $hostShort = $hostRaw.Split('.')[0]
+    $hostShort = $hostShort -replace '^(DESKTOP-|LAPTOP-|PC-|WORKSTATION-)', 'WIN-'
+    return $hostShort.Trim()
+}
+
+function prompt {
+    # --- 上段：Git（必要な最小情報のみ） ---
+    Write-Host "`n" -NoNewline
+    $getGit = Get-Command Get-GitStatus -ErrorAction SilentlyContinue
+    if ($getGit) {
+        $s = Get-GitStatus
+        if ($s) {
+            $mark = if ($s.HasUntrackedFiles -or $s.HasWorking) { "*" } else { "" }
+            $ahead = if ($s.AheadBy) { " ↑$($s.AheadBy)" }  else { "" }
+            $behind = if ($s.BehindBy) { " ↓$($s.BehindBy)" } else { "" }
+            $line = "[{0}{1}{2}{3}]" -f $s.Branch, $mark, $ahead, $behind
+
+            # 好みの色（マゼンタのままでOK。変えるならここ）
+            Write-Host $line -ForegroundColor Magenta
+            # 色干渉が気になる場合のみリセット（ほぼ不要）
+            # Write-Host "$($PSStyle.Reset)" -NoNewline
+        }
+    }
+
+
+    # --- 1行目：ユーザー@ホスト:パス ---
+    Write-Host "[" -NoNewline -ForegroundColor White
     if (isAdmin) {
-        $(Write-Host -NoNewline "`r`n" -ForegroundColor White) `
-            + $(Write-Host -NoNewline "[" -ForegroundColor White) `
-            + $(Write-Host -NoNewline "root" -ForegroundColor Red) `
-            + $(Write-Host -NoNewline "%" -ForegroundColor White) `
-            + $(Write-Host -NoNewline $($env:USERNAME) -ForegroundColor Cyan) `
-            + $(Write-Host -NoNewline "@" -ForegroundColor White) `
-            + $(Write-Host -NoNewline $(get-location) -ForegroundColor DarkGreen) `
-            + $(Write-Host -NoNewline "]" -ForegroundColor White) `
-            + $(Write-VcsStatus) `
-            + "`r`n> "
+        Write-Host "root" -NoNewline -ForegroundColor Red
+        Write-Host "%"    -NoNewline -ForegroundColor White
+    }
+    Write-Host $env:USERNAME -NoNewline -ForegroundColor Cyan
+    Write-Host "@" -NoNewline -ForegroundColor White
+    Write-Host (Get-ShortHostname) -NoNewline -ForegroundColor Yellow
+    Write-Host ":" -NoNewline -ForegroundColor White
+    Write-Host (Get-PrettyPath) -NoNewline -ForegroundColor DarkGreen
+    Write-Host "]" -NoNewline -ForegroundColor White
+    Write-Host "`n" -NoNewline
+
+    # --- プロンプト記号 ---
+    if (isAdmin) {
+        Write-Host "${PSStyle.Foreground.Red}>${PSStyle.Reset}" -NoNewline
     }
     else {
-        $(Write-Host -NoNewline "`r`n" -ForegroundColor White) `
-            + $(Write-Host -NoNewline "[" -ForegroundColor White) `
-            + $(Write-Host -NoNewline $($env:USERNAME) -ForegroundColor Cyan) `
-            + $(Write-Host -NoNewline "@" -ForegroundColor White) `
-            + $(Write-Host -NoNewline $(get-location) -ForegroundColor DarkGreen) `
-            + $(Write-Host -NoNewline "]" -ForegroundColor White) `
-            + $(Write-VcsStatus) `
-            + "`r`n> "
+        $pink = $PSStyle.Foreground.FromRgb(255, 95, 135)
+        Write-Host "${pink}>${PSStyle.Reset}" -NoNewline
     }
+
+    return " "
 }
 
 
@@ -148,7 +186,7 @@ function prompt () {
 #Set-Alias micro "C:\Users\tyama\local\bin\micro-2.0.10\micro.exe"
 #Set-Alias touch "$HOME\local\bin\touch.exe"
 Set-Alias grep Select-String
-Set-Alias which where.exe
+# Set-Alias which where.exe
 Set-Alias bk cd-
 
 # 絶対必要.

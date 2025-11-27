@@ -58,6 +58,7 @@ if not exist "%PWSH_EXE%" (
 
 REM ====== 任意：uutils.coreutils のインストール ======
 "%WINGET_EXE%" install --id uutils.coreutils --source winget --accept-package-agreements --accept-source-agreements
+"%WINGET_EXE%" install --id GnuWin32.Which --source winget --accept-package-agreements --accept-source-agreements
 if errorlevel 1 (
     echo [WARN] uutils.coreutils のインストールに失敗（続行）。
 )
