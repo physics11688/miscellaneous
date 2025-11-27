@@ -52,7 +52,7 @@ Set-Alias hosts CustomHosts
 function CustomUpdate () {
     explorer ms-settings:windowsupdate
 }
-Set-Alias update CustomUpdate
+Set-Alias wupdate CustomUpdate
 
 function UpdateAllpip () {
     py -m pip list --outdated | Select-Object -Skip 2 | ForEach-Object { py -m pip install --upgrade ($_.Split()[0]) }
@@ -190,6 +190,12 @@ function prompt {
 Set-Alias grep Select-String
 # Set-Alias which where.exe
 Set-Alias bk cd-
+
+
+function update {
+    winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
+}
+
 
 # 絶対必要.
 Import-Module PSReadLine

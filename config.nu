@@ -23,6 +23,8 @@ $env.config = ($env.config | upsert show_banner false)
 # エイリアス
 alias ll = ls -l
 alias showp = ^py -c 'import serial.tools.list_ports as s; [print(p) for p in reversed(list(s.comports()))]'
+alias update = ^winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
+
 
 # PATHに追加
 
@@ -128,177 +130,139 @@ def pipupdate [] {
 }
 
 
-# keybind
-
-
-# --- 既存 $env.config の安全初期化 ---
+# ========== 安全初期化 ==========
 $env.config = ($env.config? | default {})
-
-# --- Emacsモード（bash風） ---
-$env.config.edit_mode = 'emacs'
-
-# --- InlinePrediction 相当の色（ヒントの色） ---
-# PSReadLine: InlinePrediction = '#9CA3AF'
-# Nushellでは color_config.hints に相当
 $env.config.color_config = ($env.config.color_config? | default {})
-$env.config.color_config.hints = '#9CA3AF'
+$env.config.keybindings = ($env.config.keybindings? | default [])
 
-# --- 追加したいキーバインド群（PSReadLine設定を全て移植） ---
+# ========== 基本設定 ==========
+# Emacs モード
+$env.config.edit_mode = "emacs"
+
+# ヒント色（PSReadLine InlinePrediction 相当）
+$env.config.color_config.hints = "#9CA3AF"
 
 
+# ========== PSReadLine 相当キーバインド再現 ==========
 let _new_bindings = [
-  # Tab：補完メニューを開く／開いていれば確定（enterにフォールバック）
-  {
-    name: "completion_menu_tab"
-    modifier: none
-    keycode: tab
-    mode: [emacs, vi_insert, vi_normal]
-    event: {
-      until: [
-        { send: menu, name: "completion_menu" }
-        { send: enter }
-      ]
+    # TAB: 補完メニュー → 既に開いていれば確定
+    {
+        name: "completion_menu_tab"
+        modifier: none
+        keycode: tab
+        mode: [emacs, vi_insert, vi_normal]
+        event: [
+            { send: menu, name: "completion_menu" }
+            { send: enter }
+        ]
     }
-  }
 
-  # Ctrl + D：終了（EOF）
-  {
-    name: "ctrl_d_exit_or_delete"
-    modifier: control
-    keycode: char_d
-    mode: [emacs, vi_insert, vi_normal]
-    event: { send: ctrld }
-  }
-
-  # Ctrl + L：画面クリア
-  {
-    name: "ctrl_l_clear_screen"
-    modifier: control
-    keycode: char_l
-    mode: [emacs, vi_insert, vi_normal]
-    event: { send: clearscreen }
-  }
-
-  # Ctrl + R：履歴検索（インクリメンタルサーチ）
-  {
-    name: "ctrl_r_search_history"
-    modifier: control
-    keycode: char_r
-    mode: [emacs, vi_insert, vi_normal]
-    event: { send: searchhistory }
-  }
-
-  # Alt + . ：直前コマンドの最後の引数を挿入（bash互換）— 実在イベントが無いので自作
-  {
-    name: "alt_period_yank_last_arg"
-    modifier: alt
-    keycode: char_.     # ← char_<文字> 形式。ドットは 'char_.'
-    mode: [emacs, vi_insert, vi_normal]
-    event: {
-      send: executehostcommand
-      cmd: (
-        let cmds = (history | last 1 | get command);
-        if ($cmds | is-empty) { null } else {
-          let line = ($cmds | first | str trim);
-          let parsed = ($line | parse --regex '.*?([^\\s]+)$' | get capture0);
-          if ($parsed | is-empty) { null } else {
-            let last = ($parsed | first);
-            commandline edit --insert $last    # バッファ編集の公式コマンド
-          }
-        }
-      )
+    # Ctrl + D: EOF
+    {
+        name: "ctrl_d_exit"
+        modifier: control
+        keycode: char_d
+        mode: [emacs, vi_insert, vi_normal]
+        event: { send: ctrld }
     }
-  }
 
-  # Ctrl + ← / → ：単語単位で移動（EditCommand：**CamelCase**）
-  {
-    name: "ctrl_left_word"
-    modifier: control
-    keycode: left
-    mode: [emacs, vi_insert, vi_normal]
-    event: { edit: MoveWordLeft }
-  }
-  {
-    name: "ctrl_right_word"
-    modifier: control
-    keycode: right
-    mode: [emacs, vi_insert, vi_normal]
-    event: { edit: MoveWordRight }
-  }
+    # Ctrl + L: clear
+    {
+        name: "ctrl_l_clear"
+        modifier: control
+        keycode: char_l
+        mode: [emacs, vi_insert, vi_normal]
+        event: { send: clearscreen }
+    }
 
-  # Ctrl + ↑ ：前の単語を削除（PSReadLine: BackwardKillWord）
-  {
-    name: "ctrl_up_cut_prev_word"
-    modifier: control
-    keycode: up
-    mode: [emacs, vi_insert, vi_normal]
-    event: { edit: BackspaceWord }
-  }
+    # Ctrl + R: 履歴検索
+    {
+        name: "ctrl_r_search_history"
+        modifier: control
+        keycode: char_r
+        mode: [emacs, vi_insert, vi_normal]
+        event: { send: searchhistory }
+    }
 
-  # Ctrl + ↓ ：貼り付け（キルリング→失敗なら通常ペースト）
-  {
-    name: "ctrl_down_paste_fallback"
+    # Ctrl + Backspace: 前の単語 Cut
+    {
+        name: "ctrl_backspace_cut_prev_word"
+        modifier: control
+        keycode: backspace
+        mode: [emacs, vi_insert, vi_normal]
+        event: { edit: CutWordLeft }
+    }
+
+    # Ctrl + Delete: 次の単語 Cut
+    {
+        name: "ctrl_delete_cut_next_word"
+        modifier: control
+        keycode: delete
+        mode: [emacs, vi_insert, vi_normal]
+        event: { edit: CutWordRight }
+    }
+
+    # Ctrl + U: 行頭まで Cut
+    {
+        name: "ctrl_u_cut_from_line_start"
+        modifier: control
+        keycode: char_u
+        mode: [emacs, vi_insert, vi_normal]
+        event: { edit: CutFromLineStart }
+    }
+
+    # Ctrl + K: 行末まで Cut
+    {
+        name: "ctrl_k_cut_to_line_end"
+        modifier: control
+        keycode: char_k
+        mode: [emacs, vi_insert, vi_normal]
+        event: { edit: CutToLineEnd }
+    }
+
+    # Ctrl + ←: 単語左
+    {
+        name: "ctrl_left_move_word"
+        modifier: control
+        keycode: left
+        mode: [emacs, vi_insert, vi_normal]
+        event: { edit: MoveWordLeft }
+    }
+
+    # Ctrl + →: 単語右
+    {
+        name: "ctrl_right_move_word"
+        modifier: control
+        keycode: right
+        mode: [emacs, vi_insert, vi_normal]
+        event: { edit: MoveWordRight }
+    }
+
+# Ctrl + ↑: kill-ring の内容を前に貼り付け
+{
+    name: "ctrl_down_yank"
     modifier: control
     keycode: down
     mode: [emacs, vi_insert, vi_normal]
-    event: {
-      until: [
-        { edit: PasteCutBufferAfter }  # 直前の Cut があれば貼れる
-        { edit: Paste }                # ダメなら通常ペーストにフォールバック
-      ]
-    }
-  }
+    event: { edit: PasteCutBufferBefore }
+}
 
-  # Ctrl + Backspace ：前の単語を削除
-  {
-    name: "ctrl_backspace_cut_prev_word"
+# Ctrl + ↓: kill-ring の内容を後ろに貼り付け（必要なら）
+{
+    name: "ctrl_upda_yank"
     modifier: control
-    keycode: backspace
+    keycode: up
     mode: [emacs, vi_insert, vi_normal]
-    event: { edit: BackspaceWord }
-  }
+    event: { edit: CutWordLeft }
+}
 
-  # Ctrl + Delete ：次の単語を削除
-  {
-    name: "ctrl_delete_cut_next_word"
-    modifier: control
-    keycode: delete
-    mode: [emacs, vi_insert, vi_normal]
-    event: { edit: CutWordRight }
-  }
-
-  # Ctrl + U ：行頭まで削除（PSReadLine: BackwardKillLine）
-  {
-    name: "ctrl_u_cut_from_line_start"
-    modifier: control
-    keycode: char_u
-    mode: [emacs, vi_insert, vi_normal]
-    event: { edit: CutFromLineStart }
-  }
-
-  # Ctrl + K ：行末まで削除（PSReadLine: KillLine）
-  {
-    name: "ctrl_k_cut_to_line_end"
-    modifier: control
-    keycode: char_k
-    mode: [emacs, vi_insert, vi_normal]
-    event: { edit: CutToLineEnd }
-  }
-
-  # Ctrl + Y ：貼り付け（PSReadLineの “Yank” 寄りにしたい時はこちら）
-  # { name: "ctrl_y_paste"
-  #   modifier: control
-  #   keycode: char_y
-  #   mode: [emacs, vi_insert, vi_normal]
-  #   event: { until: [ { edit: PasteCutBufferAfter } { edit: Paste } ] }
-  # }
 ]
 
 
+# ========== キーバインドを確実にマージ（エラーなし版） ==========
+# append は値をそのまま *1要素として追加* するため、
+# for loop で 1つずつ入れるのが最も安全でエラーが出ない方式。
 
-# --- 既存 keybindings とマージ ---
-if ($env.config.keybindings? == null) {
-  $env.config.keybindings = $_new_bindings
-} else {
-  $env.config.keybindings = ($env.config.keybindings | append $_new_bindings)
+for binding in $_new_bindings {
+    $env.config.keybindings = $env.config.keybindings | append $binding
 }
