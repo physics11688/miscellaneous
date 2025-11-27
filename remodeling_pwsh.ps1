@@ -130,7 +130,9 @@ function Get-ShortHostname {
     if (-not $hostRaw) { $hostRaw = [System.Net.Dns]::GetHostName() }
     if (-not $hostRaw) { return "" }
     $hostShort = $hostRaw.Split('.')[0]
-    $hostShort = $hostShort -replace '^(DESKTOP-|LAPTOP-|PC-|WORKSTATION-)', 'WIN-'
+    $hostShort = ($hostShort -replace '^(DESKTOP-|LAPTOP-|PC-|WORKSTATION-)', 'WIN-')
+    if ($hostShort -notmatch '^WIN-') { $hostShort = "WIN-$hostShort" }
+
     return $hostShort.Trim()
 }
 
