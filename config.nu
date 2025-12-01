@@ -22,16 +22,129 @@ $env.config = ($env.config | upsert show_banner false)
 
 # エイリアス
 alias ll = ls -l
-alias showp = ^py -c 'import serial.tools.list_ports as s; [print(p) for p in reversed(list(s.comports()))]'
-alias update = ^winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
+alias showp = ^python3 -c 'import serial.tools.list_ports as s; [print(p) for p in reversed(list(s.comports()))]'
+
+
+
+# 古い pip パッケージを安全に一括アップグレードする単一関数
+# 使い方:
+#   updatepip                     # 通常（pipも先に更新）
+#   updatepip --user              # ユーザー領域にインストール
+#   updatepip --dryrun            # 実行せず対象を表示
+#   updatepip --pipfirst=false    # pip更新をスキップ
+#   updatepip --ignore "pip,setuptools,wheel"  # 除外（カンマ区切り）
+def updatepip [
+  --user,                         # boolean switch（型注釈なし）
+  --dryrun,                       # boolean switch
+  --pipfirst,                     # boolean switch（デフォは true にしたいので後段で補正）
+  --ignore: string = ""           # 値付きオプションは型注釈OK
+] {
+  # --- Pythonランチャー自動選択（py > python3 > python） ---
+  let py = (
+    if (which py | length) > 0 { 'py' }
+    else if (which python3 | length) > 0 { 'python3' }
+    else { 'python' }
+  )
+
+  # --- pip を先に更新するかの補正（switchは存在= true / 不在= false）
+  # 既定で更新したいので、スイッチが指定されなかった場合は true 扱いにする
+let do_pip_first = (if (is-empty $pipfirst) { true } else { $pipfirst })
+
+
+  if $do_pip_first {
+    ^($py) -m pip install --upgrade pip
+  }
+
+  # --- 古いパッケージ一覧を JSON で取得 ---
+  let pkgs = (^($py) -m pip list --outdated --format=json | from json)
+
+  # --- 除外リスト（カンマ区切り→配列） ---
+let i = ($ignore | default "" | str trim)
+
+let ignore_list = (
+  if (is-empty $i) {
+    []
+  } else {
+    $i | split row ',' | each {|x| $x | str trim }
+  }
+)
+
+
+  # --- 名前抽出＋除外適用 ---
+  let names = (
+    $pkgs
+    | get name
+    | where { |n| not ($n in $ignore_list) }
+  )
+
+  if (($names | length) == 0) {
+    print "No outdated packages."
+    return
+  }
+
+  if $dryrun {
+    print "Outdated packages (dry-run):"
+    $names | each { |n| print $" - ($n)" }
+    return
+  }
+
+  # --- 実行：順にアップグレード ---
+  for n in $names {
+    if $user {
+      ^($py) -m pip install -U --user $n
+    } else {
+      ^($py) -m pip install -U $n
+    }
+  }
+
+
+let count = ($names | length)
+# 補間ではなく連結にする
+print ("✅ Completed: updated " + ($count | into string) + " package(s).")
+
+}
+
+
+if (($nu.os-info.name) != 'windows') {
+  # モジュール（config.nu や別ファイル）から読み込んだ時にコマンドとして使えるように export def を推奨
+  def updatezinit [] {
+    ^zinit self-update --all
+    ^zinit update
+  }
+}
+
+
+
+if ($nu.os-info.name) == 'windows' {
+  alias update = ^winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
+} else if ($nu.os-info.name) == 'macos' {
+    def update  [] {
+         brew update
+         brew upgrade
+         brew upgrade --cask
+         brew cleanup
+    }
+} else if ($nu.os-info.name) == 'linux' {
+
+    def update [] {
+         sudo apt update
+         sudo apt -y upgrade
+         sudo apt -y autoremove
+    }
+}
+
+
+
+
+
 
 
 # PATHに追加
+
 let p = ($nu.home-path | path join 'local' 'bin')
 if (($p | path exists) and (($p | path type) == 'dir')) {
   $env.PATH = ($env.PATH | append $p | uniq)
 }
-
 
 
 
@@ -76,18 +189,23 @@ def pipupdate [] {
     let raw = (^py -m pip list --outdated --format=json --quiet)
 
     # 2) 空文字なら '[]' に置き換え（from json を必ず成功させる）
-    let safe = (if ($raw | str trim | is-empty) { '[]' } else { $raw })
+    let r = ($raw | default "" | str trim)
+
+let safe = (if (is-empty $r) { '[]' } else { $raw })
+
 
     # 3) JSON → テーブル化（不正JSONなら try で捕捉）
     let data = (try { $safe | from json } catch { [] })
 
     # 4) name 列だけ抽出（空配列ならそのまま空）
-    let pkgs = (if ($data | is-empty) { [] } else { $data | get name })
+let d = ($data | default [])
+let pkgs = (if (is-empty $d) { [] } else { $d | get name })
 
-    if ($pkgs | is-empty) {
-      print "No outdated packages."
-      return
-    }
+if (is-empty ($pkgs | default [])) {
+  print "No outdated packages."
+  return
+}
+
 
     # 5) アップグレード実行（進捗表示）
     $pkgs | each { |pkg|
@@ -111,19 +229,20 @@ $env.config.edit_mode = "emacs"
 $env.config.color_config.hints = "#9CA3AF"
 
 
+
 # ========== PSReadLine 相当キーバインド再現 ==========
 let _new_bindings = [
     # TAB: 補完メニュー → 既に開いていれば確定
-    {
-        name: "completion_menu_tab"
-        modifier: none
-        keycode: tab
-        mode: [emacs, vi_insert, vi_normal]
-        event: [
-            { send: menu, name: "completion_menu" }
-            { send: enter }
-        ]
-    }
+    # {
+    #     name: "completion_menu_tab"
+    #     modifier: none
+    #     keycode: tab
+    #     mode: [emacs, vi_insert, vi_normal]
+    #     event: [
+    #         { send: menu, name: "completion_menu" }
+    #         { send: enter }
+    #     ]
+    # }
 
     # Ctrl + D: EOF
     {
@@ -227,6 +346,8 @@ let _new_bindings = [
 ]
 
 
+
+
 # ========== キーバインドを確実にマージ（エラーなし版） ==========
 # append は値をそのまま *1要素として追加* するため、
 # for loop で 1つずつ入れるのが最も安全でエラーが出ない方式。
@@ -234,6 +355,56 @@ let _new_bindings = [
 for binding in $_new_bindings {
     $env.config.keybindings = $env.config.keybindings | append $binding
 }
+
+
+
+# # プロンプト変更
+# $env.PROMPT_INDICATOR = {|| $"(ansi '#ff5f87')$ (ansi reset)" }
+
+# $env.PROMPT_COMMAND = {||
+#   # 外部コマンドは ^ を付ける
+#   let host = (^hostname | str trim)
+
+#   # 現在のディレクトリ
+#   let p = (pwd)
+
+#   # HOME の決定（$nu.home-path があれば最優先、なければ $env.HOME）
+#   let home = (if ($nu.home-path? != null) { $nu.home-path } else { $env.HOME })
+
+#   # 表示用パス：
+#   # - ちょうど HOME のときは "~"
+#   # - HOME 配下なら "~\relative" にする
+#   # - それ以外はフルパス
+#   let shown = (
+#     if ($home != null and ($p | str starts-with $home)) {
+#       let rel = ($p | path relative-to $home)
+#       if ($rel == "" or $rel == null) { "~" } else { ([~ $rel] | path join) }
+#     } else {
+#       $p
+#     }
+#   )
+
+
+# # 文字列の前でユーザー名を決定
+# let user = (
+#   $env.USERNAME?                                           # Windows
+#   | default (
+#       $env.USER?                                           # Unix系
+#       | default (
+#           try { ^whoami | str trim | str replace -r '.*\\' '' }  # 最終フォールバック
+#           catch { "unknown" }
+#         )
+#     )
+# )
+
+
+
+# $"
+# (ansi reset)[(ansi cyan)($user)(ansi reset)@($host):(ansi yellow)($shown)(ansi reset)]
+# "
+
+# }
+
 
 
 # ===== 左プロンプト記号（$ のまま） =====
