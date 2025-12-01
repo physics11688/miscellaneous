@@ -27,46 +27,14 @@ alias update = ^winget upgrade --all --silent --accept-source-agreements --accep
 
 
 # PATHに追加
-
-$env.PATH = (
-  $env.PATH
-  | append ($nu.home-path | path join 'local' 'bin')
-  | uniq
-)
-
-
-
-
-# プロンプト変更
-$env.PROMPT_INDICATOR = {|| $"(ansi '#ff5f87')$ (ansi reset)" }
-
-$env.PROMPT_COMMAND = {||
-  # 外部コマンドは ^ を付ける
-  let host = (^hostname | str trim)
-
-  # 現在のディレクトリ
-  let p = (pwd)
-
-  # HOME の決定（$nu.home-path があれば最優先、なければ $env.HOME）
-  let home = (if ($nu.home-path? != null) { $nu.home-path } else { $env.HOME })
-
-  # 表示用パス：
-  # - ちょうど HOME のときは "~"
-  # - HOME 配下なら "~\relative" にする
-  # - それ以外はフルパス
-  let shown = (
-    if ($home != null and ($p | str starts-with $home)) {
-      let rel = ($p | path relative-to $home)
-      if ($rel == "" or $rel == null) { "~" } else { ([~ $rel] | path join) }
-    } else {
-      $p
-    }
-  )
-
-  $"
-(ansi reset)[(ansi cyan)($env.USERNAME)(ansi reset)@($host):(ansi yellow)($shown)(ansi reset)]
-"
+let p = ($nu.home-path | path join 'local' 'bin')
+if (($p | path exists) and (($p | path type) == 'dir')) {
+  $env.PATH = ($env.PATH | append $p | uniq)
 }
+
+
+
+
 
 
 
@@ -265,4 +233,76 @@ let _new_bindings = [
 
 for binding in $_new_bindings {
     $env.config.keybindings = $env.config.keybindings | append $binding
+}
+
+
+# プロンプト変更
+$env.PROMPT_INDICATOR = {|| $"(ansi '#ff5f87')$ (ansi reset)" }
+
+$env.PROMPT_COMMAND = {||
+  # 実ホスト名（必要なら別用途で使える）
+  let host = (^hostname | str trim)
+
+  # 現在のディレクトリ
+  let p = (pwd)
+
+  # HOME の決定（$nu.home-path があれば最優先、なければ $env.HOME）
+  let home = (if ($nu.home-path? != null) { $nu.home-path } else { $env.HOME })
+
+  # 表示用パス：
+  # - ちょうど HOME のときは "~"
+  # - HOME 配下なら "~\relative" にする
+  # - それ以外はフルパス
+  let shown = (
+    if ($home != null and ($p | str starts-with $home)) {
+      let rel = ($p | path relative-to $home)
+      if ($rel == "" or $rel == null) { "~" } else { ([~ $rel] | path join) }
+    } else {
+      $p
+    }
+  )
+
+  # ユーザー名の決定
+  let user = (
+    $env.USERNAME?                                           # Windows
+    | default (
+        $env.USER?                                           # Unix系
+        | default (
+            try { ^whoami | str trim | str replace -r '.*\\' '' }  # 最終フォールバック
+            catch { "unknown" }
+          )
+      )
+  )
+
+  # OS 名（Nushell が提供）
+  let os_name = ($nu.os-info.name? | default "unknown")
+
+  # WSL 判定: 環境変数 or /proc/version の Microsoft 文字列
+  let is_wsl = (
+    ($env.WSL_DISTRO_NAME? != null)
+    or (
+      try { (open /proc/version | into string | str contains 'Microsoft') }
+      catch { false }
+    )
+  )
+
+  # if ブロック全体を () で包み 1式にする
+  let shown_host = (
+    if $is_wsl {
+      "WSL-7KUNDI5"
+    } else if $os_name == "windows" {
+      "WIN-7KUNDI5"
+    } else if $os_name == "macOS" {
+      "LabMac"
+    } else if $os_name != "unknown" {
+      $"( $os_name )-7KUNDI5"  # ←補間は ($os_name) に修正
+    } else {
+      "Host-7KUNDI5"           # 最終フォールバック
+    }
+  )
+
+  # ここも補間は ($var) 形式に統一
+  $"
+(ansi reset)[(ansi cyan)($user)(ansi reset)@($shown_host):(ansi yellow)($shown)(ansi reset)]
+"
 }
