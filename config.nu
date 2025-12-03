@@ -106,43 +106,6 @@ print ("✅ Completed: updated " + ($count | into string) + " package(s).")
 }
 
 
-if (($nu.os-info.name) != 'windows') {
-  # モジュール（config.nu や別ファイル）から読み込んだ時にコマンドとして使えるように export def を推奨
-  def updatezinit [] {
-    ^zinit self-update --all
-    ^zinit update
-  }
-}
-
-
-
-if ($nu.os-info.name) == 'windows' {
-  alias update = ^winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
-} else if ($nu.os-info.name) == 'macos' {
-    def update  [] {
-         brew update
-         brew upgrade
-         brew upgrade --cask
-         brew cleanup
-    }
-} else if ($nu.os-info.name) == 'linux' {
-
-    def update [] {
-         sudo apt update
-         sudo apt -y upgrade
-         sudo apt -y autoremove
-    }
-}
-
-
-
-
-
-
-
-# PATHに追加
-
-
 
 # 存在すれば PATH に追加（重複は追加しない）
 
@@ -170,14 +133,48 @@ def --env add-to-path-if-exists [
 
 
 
-add-to-path-if-exists ($env.ProgramFiles | path join 'LLVM' | path join 'bin')
-add-to-path-if-exists ($env.USERPROFILE | path join 'mingw64' | path join 'bin')
-add-to-path-if-exists ($env.USERPROFILE | path join 'local' | path join 'bin')
 # 先頭に入れたい場合
 # add-to-path-if-exists ($env.USERPROFILE | path join 'mingw64' | path join 'bin') --prepend
 
 
+if (($nu.os-info.name) != 'windows') {
+  # モジュール（config.nu や別ファイル）から読み込んだ時にコマンドとして使えるように export def を推奨
+  def updatezinit [] {
+    ^zinit self-update --all
+    ^zinit update
+  }
+}
 
+
+
+if ($nu.os-info.name) == 'windows' {
+  alias update = ^winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
+  add-to-path-if-exists ($env.ProgramFiles | path join 'LLVM' | path join 'bin')
+  add-to-path-if-exists ($env.USERPROFILE | path join 'mingw64' | path join 'bin')
+  add-to-path-if-exists ($env.USERPROFILE | path join 'local' | path join 'bin')
+} else if ($nu.os-info.name) == 'macos' {
+    def update  [] {
+         brew update
+         brew upgrade
+         brew upgrade --cask
+         brew cleanup
+    }
+
+    add-to-path-if-exists ($env.HOME | path join '.local' | path join 'bin')
+
+
+
+
+
+} else if ($nu.os-info.name) == 'linux' {
+  add-to-path-if-exists ('/snap' | path join 'bin' )
+
+    def update [] {
+         sudo apt update
+         sudo apt -y upgrade
+         sudo apt -y autoremove
+    }
+}
 
 
 
@@ -397,54 +394,6 @@ for binding in $_new_bindings {
 
 
 
-# # プロンプト変更
-# $env.PROMPT_INDICATOR = {|| $"(ansi '#ff5f87')$ (ansi reset)" }
-
-# $env.PROMPT_COMMAND = {||
-#   # 外部コマンドは ^ を付ける
-#   let host = (^hostname | str trim)
-
-#   # 現在のディレクトリ
-#   let p = (pwd)
-
-#   # HOME の決定（$nu.home-path があれば最優先、なければ $env.HOME）
-#   let home = (if ($nu.home-path? != null) { $nu.home-path } else { $env.HOME })
-
-#   # 表示用パス：
-#   # - ちょうど HOME のときは "~"
-#   # - HOME 配下なら "~\relative" にする
-#   # - それ以外はフルパス
-#   let shown = (
-#     if ($home != null and ($p | str starts-with $home)) {
-#       let rel = ($p | path relative-to $home)
-#       if ($rel == "" or $rel == null) { "~" } else { ([~ $rel] | path join) }
-#     } else {
-#       $p
-#     }
-#   )
-
-
-# # 文字列の前でユーザー名を決定
-# let user = (
-#   $env.USERNAME?                                           # Windows
-#   | default (
-#       $env.USER?                                           # Unix系
-#       | default (
-#           try { ^whoami | str trim | str replace -r '.*\\' '' }  # 最終フォールバック
-#           catch { "unknown" }
-#         )
-#     )
-# )
-
-
-
-# $"
-# (ansi reset)[(ansi cyan)($user)(ansi reset)@($host):(ansi yellow)($shown)(ansi reset)]
-# "
-
-# }
-
-
 
 # ===== 左プロンプト記号（$ のまま） =====
 $env.PROMPT_INDICATOR = {|| $"(ansi '#ff5f87')$ (ansi reset)" }
@@ -563,14 +512,35 @@ def git_prompt [] {
 # ===== 左プロンプト（ユーザ/ホスト/パス） =====
 $env.PROMPT_COMMAND = {||
   # 現在ディレクトリ・HOME・表示パス
-  let p = (pwd)
-  let home = (if ($nu.home-path? != null) { $nu.home-path } else { $env.HOME })
-  let shown = (
-    if ($home != null and ($p | str starts-with $home)) {
-      let rel = ($p | path relative-to $home)
-      if ($rel == "" or $rel == null) { "~" } else { ([~ $rel] | path join) }
-    } else { $p }
-  )
+
+let p = (pwd)
+let home = (if ($nu.home-path? != null) { $nu.home-path } else { $env.HOME })
+let od_org = "OneDrive - 独立行政法人 国立高等専門学校機構"
+let od_root = ([$home $od_org] | path join)
+
+let shown = (
+  if ($p | str starts-with $od_root) {
+    # OneDrive配下を "OneDriveBusiness/..." に置換
+    let rel = ($p | path relative-to $od_root)
+    if ($rel == "" or $rel == null) {
+      "OneDriveBusiness"
+    } else {
+      (["OneDriveBusiness" $rel] | path join)
+    }
+  } else if ($home != null and ($p | str starts-with $home)) {
+    # 既存のホーム短縮（~）
+    let rel = ($p | path relative-to $home)
+    if ($rel == "" or $rel == null) {
+      "~"
+    } else {
+      ([~ $rel] | path join)
+    }
+  } else {
+    $p
+  }
+)
+
+
 
 
 
@@ -599,8 +569,8 @@ $env.PROMPT_COMMAND = {||
   )
   let shown_host = (
     if $is_wsl { "WSL-7KUNDI5" }
-    else if $os_name == "windows" { "WIN-7KUNDI5" }
-    else if $os_name == "macOS" { "LabMac" }
+    else if $os_name == "windows" { "Win-7KUNDI5" }
+    else if $os_name == "macos" { "LabMac" }
     else if $os_name != "unknown" { $"( $os_name )-7KUNDI5" }
     else { "Host-7KUNDI5" }
   )
@@ -610,12 +580,11 @@ $env.PROMPT_COMMAND = {||
   # 左にベースラインのみ表示
 
   # 左にベースラインのみ表示（最後に改行を付ける）
-  let left = $"\n(ansi reset)[(ansi cyan)( $user )(ansi reset)@( $shown_host ):(ansi yellow)( $shown )(ansi reset)]"
+  let left = $"\n(ansi reset)[(ansi xterm_cyan1)( $user )(ansi reset)@(ansi xterm_palegreen1a)( $shown_host )(ansi reset):(ansi light_yellow_bold)( $shown )(ansi reset)]"
   $"( $left )\n"          # ← ここで改行を付加（(char nl) でもOK）
 
 }
 
-# ===== 右プロンプト（Git ステータス） =====
 
 # ===== 右プロンプト（Git + 日付） =====
 # シンプル版（例：2025-12-01 18:05）
