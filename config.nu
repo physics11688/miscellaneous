@@ -19,6 +19,7 @@
 
 # ウェルカムメッセージの非表示
 $env.config = ($env.config | upsert show_banner false)
+$env.config.buffer_editor = "code"
 
 # エイリアス
 alias ll = ls -l
@@ -141,10 +142,40 @@ if ($nu.os-info.name) == 'windows' {
 
 # PATHに追加
 
-let p = ($nu.home-path | path join 'local' 'bin')
-if (($p | path exists) and (($p | path type) == 'dir')) {
-  $env.PATH = ($env.PATH | append $p | uniq)
+
+
+# 存在すれば PATH に追加（重複は追加しない）
+
+def --env add-to-path-if-exists [
+  dir: string,
+  --prepend
+] {
+  # 1) 存在確認（path exists は“パイプ入力”を受けます）
+  if ($dir | path exists) {
+
+    # 2) 既に PATH に入っているかを変数に
+    let already = ($env.PATH | any {|p| $p == $dir })
+
+    # 3) まだ入っていないなら追加
+    if (not $already) {
+      $env.PATH = if $prepend {
+        [$dir] | append $env.PATH
+      } else {
+        $env.PATH | append $dir
+      }
+    }
+
+  }
 }
+
+
+
+add-to-path-if-exists ($env.ProgramFiles | path join 'LLVM' | path join 'bin')
+add-to-path-if-exists ($env.USERPROFILE | path join 'mingw64' | path join 'bin')
+add-to-path-if-exists ($env.USERPROFILE | path join 'local' | path join 'bin')
+# 先頭に入れたい場合
+# add-to-path-if-exists ($env.USERPROFILE | path join 'mingw64' | path join 'bin') --prepend
+
 
 
 
@@ -178,6 +209,14 @@ def showp [] {
   ^py -c 'import serial.tools.list_ports as s; [print(p) for p in reversed(list(s.comports()))]'
 }
 
+
+
+# 1つの位置引数 (string 型) を受け取る例
+def gitpush [msg: string] {
+    ^git add .
+    ^git commit -m $msg
+    ^git push
+}
 
 
 
@@ -583,5 +622,5 @@ $env.PROMPT_COMMAND = {||
 $env.PROMPT_COMMAND_RIGHT = {||
   let g = (git_prompt)
   let t = (date now | format date "%Y-%m-%d %H:%M")
-  [ $g $t ] | where { |x| $x != "" } | str join "  "
+  [ "NuShell:" $g $t ] | where { |x| $x != "" } | str join "  "
 }

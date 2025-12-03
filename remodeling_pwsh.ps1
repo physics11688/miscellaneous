@@ -130,8 +130,8 @@ function Get-ShortHostname {
     if (-not $hostRaw) { $hostRaw = [System.Net.Dns]::GetHostName() }
     if (-not $hostRaw) { return "" }
     $hostShort = $hostRaw.Split('.')[0]
-    $hostShort = ($hostShort -replace '^(DESKTOP-|LAPTOP-|PC-|WORKSTATION-)', 'WIN-')
-    if ($hostShort -notmatch '^WIN-') { $hostShort = "WIN-$hostShort" }
+    $hostShort = ($hostShort -replace '^(DESKTOP-|LAPTOP-|PC-|WORKSTATION-)', 'Win-')
+    if ($hostShort -notmatch '^Win-') { $hostShort = "Win-$hostShort" }
 
     return $hostShort.Trim()
 }
@@ -164,9 +164,9 @@ function prompt {
     }
     Write-Host $env:USERNAME -NoNewline -ForegroundColor Cyan
     Write-Host "@" -NoNewline -ForegroundColor White
-    Write-Host (Get-ShortHostname) -NoNewline -ForegroundColor Yellow
+    Write-Host -NoNewline "`e[38;2;95;255;135m$(Get-ShortHostname)`e[0m"
     Write-Host ":" -NoNewline -ForegroundColor White
-    Write-Host (Get-PrettyPath) -NoNewline -ForegroundColor DarkGreen
+    Write-Host -NoNewline "`e[38;2;255;255;0m$(Get-PrettyPath)`e[0m"
     Write-Host "]" -NoNewline -ForegroundColor White
     Write-Host "`n" -NoNewline
 
@@ -270,7 +270,7 @@ Set-PSReadLineKeyHandler -Chord Alt+. -Function YankLastArg
 
 
 $env:path += ";$env:ProgramFiles\LLVM\bin"    # clangのPATHをprofileで追加しとく.アップデートのたびに消えるし.
-$env:path += ";$env:USERPROFILE\mingw64\bin" # 一応・・・
+$env:path += ";$env:ProgramFiles\mingw64\bin" # 一応・・・
 
 # C環境のアップデート.
 function updateC {
