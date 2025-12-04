@@ -193,6 +193,7 @@ Set-Alias bk cd-
 
 
 function update {
+    winget source update
     winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
 }
 
