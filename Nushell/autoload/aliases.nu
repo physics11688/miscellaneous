@@ -150,49 +150,43 @@ export def path [Filter?: string] {
 #   updatepip --dryrun            # 実行せず対象を表示
 #   updatepip --pipfirst=false    # pip更新をスキップ
 #   updatepip --ignore "pip,setuptools,wheel"  # 除外（カンマ区切り）
+
 export def updatepip [
-  --user,                         # boolean switch（型注釈なし）
-  --dryrun,                       # boolean switch
-  --pipfirst,                     # boolean switch（デフォは true にしたいので後段で補正）
-  --ignore: string = ""           # 値付きオプションは型注釈OK
+  --user,              # boolean switch
+  --dryrun,            # boolean switch
+  --no-pipfirst,       # 指定されたら “pip を先に更新” を無効化
+  --ignore: string = ""  # 値付きオプション
 ] {
-  # --- Pythonランチャー自動選択（py > python3 > python） ---
+  # Python ランチャー自動選択（py > python3 > python）
   let py = (
-    if (which py | length) > 0 { 'py' }
-    else if (which python3 | length) > 0 { 'python3' }
+    if (which py | is-not-empty) { 'py' }
+    else if (which python3 | is-not-empty) { 'python3' }
     else { 'python' }
   )
 
-  # --- pip を先に更新するかの補正（switchは存在= true / 不在= false）
-  # 既定で更新したいので、スイッチが指定されなかった場合は true 扱いにする
-let do_pip_first = (if (is-empty $pipfirst) { true } else { $pipfirst })
-
+  # 既定は “pip を先に更新する” → 否定スイッチで反転
+  let do_pip_first = (not ($no_pipfirst | default false | into bool))
 
   if $do_pip_first {
     ^($py) -m pip install --upgrade pip
   }
 
-  # --- 古いパッケージ一覧を JSON で取得 ---
-  let pkgs = (^($py) -m pip list --outdated --format=json | from json)
+  # 古いパッケージ一覧を取得（失敗時に早期リターン）
+  let pkgs = (try {
+    ^($py) -m pip list --outdated --format=json | from json
+  } catch {
+    print "pip の一覧取得に失敗しました。Python/pip のインストールやネットワークを確認してください。"
+    return
+  })
 
-  # --- 除外リスト（カンマ区切り→配列） ---
-let i = ($ignore | default "" | str trim)
-
-let ignore_list = (
-  if (is-empty $i) {
-    []
-  } else {
-    $i | split row ',' | each {|x| $x | str trim }
-  }
-)
-
-
-  # --- 名前抽出＋除外適用 ---
-  let names = (
-    $pkgs
-    | get name
-    | where { |n| not ($n in $ignore_list) }
+  # 除外リストの整形
+  let i = ($ignore | default "" | str trim)
+  let ignore_list = (
+    if (is-empty $i) { [] } else { $i | split row ',' | each {|x| $x | str trim } }
   )
+
+  # 名前抽出＋除外適用
+  let names = ($pkgs | get name | where {|n| not ($n in $ignore_list) })
 
   if (($names | length) == 0) {
     print "No outdated packages."
@@ -201,22 +195,20 @@ let ignore_list = (
 
   if $dryrun {
     print "Outdated packages (dry-run):"
-    $names | each { |n| print $" - ($n)" }
+    $names | each {|n| print $" - ($n)" }
     return
   }
 
-  # --- 実行：順にアップグレード ---
-  for n in $names {
-    if $user {
-      ^($py) -m pip install -U --user $n
-    } else {
-      ^($py) -m pip install -U $n
-    }
+  # 順にアップグレード
+
+for n in $names {
+  match $user {
+    true  => { ^($py) -m pip install -U --user $n }
+    false => { ^($py) -m pip install -U $n }
   }
+}
 
 
-let count = ($names | length)
-# 補間ではなく連結にする
-print ("✅ Completed: updated " + ($count | into string) + " package(s).")
-
+  let count = ($names | length)
+  print ("✅ Completed: updated " + ($count | into string) + " package(s).")
 }
